@@ -71,7 +71,7 @@ profiles and tray behavior. Hover over a control or press **F1** for help in the
 ---
 
 <details>
-<summary>⚙️ Technical details & contributing</summary>
+<summary>⚙️ Technical details</summary>
 
 ### 🏗️ Architecture and execution model
 
@@ -444,6 +444,11 @@ The portable archive excludes tests and developer tools. `bin/`, `obj/` and
 `dist/` are ignored by Git. The source ZIP comes from the committed revision,
 while the fingerprint checks prevent packaging a stale or modified build.
 
+
+</details>
+
+---
+
 ### 🤝 Contributing
 
 Contributions are welcome. Use
@@ -457,10 +462,6 @@ selected sensor IDs and relevant diagnostic details. Explain whether the
 problem concerns AIDA64 readings, port access, display values or animations.
 For pull requests, describe the change and what you checked. Keep changes
 compatible with the C# 5 / .NET Framework 4.7.2 build.
-
-</details>
-
----
 
 ## 📄 License
 
