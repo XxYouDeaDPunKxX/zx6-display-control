@@ -1,0 +1,99 @@
+Z-X6 DISPLAY CONTROL — 0.1.0-beta.1
+
+Get started
+Extract the entire folder, keeping ZX6DisplayControl.Core.dll beside ZX6DisplayControl.exe. Run the EXE.
+Requires Windows and .NET Framework 4.7.2 or later. Administrator rights are not required.
+Supported device: Z-X6 GPU support bracket with CPU/GPU temperature display.
+This beta supports one Z-X6 at a time. Connect only one compatible holder.
+The tested unit reports Turing / UsbMonitor, USB 1A86:5722 / USB35INCHIPSV2.
+These USB identifiers are used to find its COM port. Other models and firmware
+variants have not been verified, even if they share those identifiers.
+
+Connect AIDA64
+In AIDA64 Extreme: Preferences > Hardware Monitoring > External Applications.
+Enable shared memory and select the sensors to export. The app only lists exported
+sensors. Defaults use TCPU and TGPU1; choose alternatives when necessary.
+For Follow usage, export CPU Utilization (SCPUUTI) and GPU Utilization (SGPU1UTI).
+Disable AIDA64 LCD > Turing and close the original GPU LCD software: the serial port
+can only have one owner. SensorPanel can remain enabled. This app does not change
+AIDA64 preferences. Install and configure AIDA64 separately.
+
+Configure each side
+Temperature chooses the number shown on that side of the holder. Animation has its
+own control sensor; changing it does not change the temperature number.
+Pick sensors from the list by name, measurement type, unit and ID. Search is optional.
+
+Modes:
+  Loop: Fill, Empty, Bounce or Random. Speed presets: Slow (1 fps), Normal (2 fps),
+        Fast (4 fps), Follow usage or Follow temperature.
+  Sensor level: map a sensor reading to one of eight bar levels.
+  Fixed level: hold a level from 0 (empty) to 7 (full).
+Follow usage starts with a 0–100% range. Follow temperature uses the selected display
+temperature and a 30–80 °C range. Advanced settings exposes exact ranges, speed,
+response time, inversion and level hysteresis. Closing it retains custom settings.
+Choosing another unit adapts known ranges (% and °C). For RPM, watts and other units,
+review and confirm the range in Advanced settings. No thresholds are inferred for them.
+Pause animation holds only that bar; valid temperature numbers continue updating.
+Preview shows the bar level produced by your current settings. Apply activates them.
+The holder displays whole degrees from 0 to 99 °C; fractions are truncated.
+The app has no controls for brightness, RGB lighting, custom images or firmware updates.
+
+Apply and profiles
+Apply saves your changes and activates the selected profile. Revert discards pending changes.
+During a file operation, editing is temporarily disabled and progress appears above
+the tabs. A failed save keeps the draft available for correction or retry.
+Alt+A applies; Alt+R reverts. Hover over a function or press F1 for contextual help.
+Selecting a profile loads a draft; Apply activates it on the holder.
+Standard presets: Classic (steady fill), Activity (speed follows usage), Thermal
+(speed follows temperature) and Sensor levels (bar height follows usage).
+Creative presets: Random (independent random levels), Breathe (slow fill/empty),
+Counterflow (CPU fills while GPU empties) and Split tempo (CPU 1 fps, GPU 4 fps).
+The preset menus add named copies. Existing profiles can be edited or duplicated.
+Profiles > More contains rename, JSON import/export, delete and restore defaults.
+Collection changes are pending until Apply. Import asks before replacing a matching name.
+
+Daily operation
+Settings & About > Close to tray keeps the controller running when the window closes.
+This is enabled by default. Minimize to tray is a separate option, initially off.
+Double-click the notification-area icon to reopen the window. If Windows hides the
+icon, expand the notification-area overflow. Launching the EXE again also opens it.
+The tray menu provides window, power, settings and exit actions. Exit stops updates,
+requests display off and releases the serial port. Unsaved changes offer Save, Discard
+or Cancel. Closing to the tray keeps pending edits in memory until the app exits.
+Exit waits for an active file operation and controller cleanup while keeping the
+window responsive. If closing takes longer than five seconds, its status remains visible.
+If Windows shutdown arrives during a file operation, the app postpones that request
+to finish the operation and then closes. Retry Windows shutdown afterwards. Idle
+Windows shutdown is allowed; forced termination cannot guarantee unfinished cleanup.
+Start with Windows is opt-in and starts the app in the tray. Apply saves this choice.
+If the app folder moves, disable and re-enable startup from its new location.
+Appearance offers Light, Dark or System. Theme previews immediately; Apply saves it.
+Revert restores the saved theme. Windows high contrast takes precedence. System follows
+the Windows app color preference; native file pickers retain Windows styling.
+
+Missing data and recovery
+Turning the display off preserves that choice across reconnects and suspend/resume.
+Missing temperature data for over five seconds requests display off. Valid data resumes
+updates automatically, provided the display is enabled. Losing only an animation sensor
+holds that bar while temperature numbers continue updating.
+Last reading marks cached values when AIDA64 is unavailable. A stationary reading does
+not prove a sensor is stale: AIDA64 supplies no production timestamp in this export.
+Use Device & setup > Reconnect to retry immediately. If the port is busy, close its other
+owner. If more than one matching holder is detected, disconnect the others.
+Updates resume automatically when only one remains. Diagnostics shows the detected display.
+Diagnostics > Events shows the latest 200 events from the current app session.
+Select text and press Ctrl+C to copy it. Last received is the app's receipt time,
+not a sensor timestamp. Log-file failures remain visible even if the file cannot
+be written. Export diagnostics includes this event history and the available log files.
+
+Local data and removal
+Settings & About can open %LOCALAPPDATA%\ZX6DisplayControl. It contains settings.json,
+settings.previous.json and up to two 1 MB log files. Invalid settings files are retained
+during recovery. Diagnostics exports selected IDs, the active profile, status, counters
+and recent events; it does not include AIDA64's INI/license or the entire sensor catalog.
+The app does not transmit data over the network. Inspect reports before sharing them.
+To remove the app: disable Start with Windows, Apply, Exit, then remove the extracted
+folder. Local settings can be retained for later use.
+
+Version
+Version.txt identifies the application version and source revision in this package.
