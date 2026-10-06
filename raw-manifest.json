@@ -1,0 +1,49 @@
+{
+  "name": "Z-X6 Display Control",
+  "artifactType": "PAGE",
+  "description": "A portable Windows app for the Z-X6 GPU holder display. Choose AIDA64 sensors, customize CPU/GPU bar animations and save profiles.",
+  "language": "en",
+  "url": "https://xxyoudeadpunkxx.github.io/zx6-display-control/",
+  "deployment": {
+    "provider": "GitHub Pages",
+    "pagesType": "PROJECT_SITE",
+    "owner": "XxYouDeaDPunKxX",
+    "repository": "zx6-display-control",
+    "sourceBranch": "gh-pages",
+    "sourcePath": "/",
+    "customDomain": null,
+    "domainRoot": "https://xxyoudeadpunkxx.github.io/",
+    "siteRoot": "https://xxyoudeadpunkxx.github.io/zx6-display-control/",
+    "discoveryRoot": "https://xxyoudeadpunkxx.github.io/zx6-display-control/"
+  },
+  "repository": "https://github.com/XxYouDeaDPunKxX/zx6-display-control",
+  "software": {
+    "version": "0.1.0-beta.1",
+    "status": "beta",
+    "license": "MIT",
+    "platform": "Windows",
+    "runtime": ".NET Framework 4.7.2 or later",
+    "sensorSource": "AIDA64 shared memory",
+    "device": "Z-X6 GPU holder display",
+    "deviceLimit": "One matching holder at a time",
+    "executableSigned": false
+  },
+  "downloads": {
+    "portable": "https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/ZX6DisplayControl.zip",
+    "source": "https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/ZX6DisplayControl-source.zip",
+    "checksums": "https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/SHA256.txt",
+    "releaseNotes": "https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/tag/v0.1.0-beta.1"
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "url": "https://xxyoudeadpunkxx.github.io/zx6-display-control/",
+      "title": "Z-X6 Display Control — Your sensors, on your Z-X6"
+    }
+  ],
+  "discovery": {
+    "llms": "https://xxyoudeadpunkxx.github.io/zx6-display-control/llms.txt",
+    "manifest": "https://xxyoudeadpunkxx.github.io/zx6-display-control/raw-manifest.json",
+    "sitemap": "https://xxyoudeadpunkxx.github.io/zx6-display-control/sitemap.xml"
+  }
+}

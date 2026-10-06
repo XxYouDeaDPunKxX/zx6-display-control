@@ -1,0 +1,46 @@
+# Z-X6 Display Control
+
+> Portable Windows app for the Z-X6 GPU holder display, using sensor readings exported by AIDA64.
+
+## Project
+
+- Canonical landing page: https://xxyoudeadpunkxx.github.io/zx6-display-control/
+- Repository and technical documentation: https://github.com/XxYouDeaDPunKxX/zx6-display-control
+- Current release: 0.1.0-beta.1 (public beta; unsigned executable)
+- License: MIT
+- Platform: Windows with .NET Framework 4.7.2 or later
+- Sensor source: AIDA64 shared memory
+- Source language: C# 5 / Windows Forms
+
+## What the app controls
+
+Two temperature readouts and two independent bars with eight levels. Users choose CPU/GPU temperature sources separately from animation sources. Bars support fill, empty, bounce, random, sensor-level and fixed-level behavior. Profiles can be edited, saved, duplicated, imported and exported. Tray controls and optional Windows startup are included.
+
+## Requirements and limits
+
+Use one Z-X6 at a time. Other holder models and firmware variants have not been verified. The app has no controls for RGB lighting, brightness, custom images or firmware updates.
+
+AIDA64 must be installed, running and configured to export the selected sensors through shared memory. Disable AIDA64's Turing LCD output and close the original GPU LCD utility so the serial port is available.
+
+## Downloads
+
+- [Portable Windows app](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/ZX6DisplayControl.zip): extract the full ZIP and keep the Core DLL beside the EXE.
+- [Source archive](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/ZX6DisplayControl-source.zip): source, tools and documentation for the beta release.
+- [Checksums](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/SHA256.txt): hashes for both archives and the portable files.
+- [Release notes](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/tag/v0.1.0-beta.1)
+
+## Documentation and contribution
+
+- [User guide](https://github.com/XxYouDeaDPunKxX/zx6-display-control/blob/main/docs/Guide.txt)
+- [README and technical details](https://github.com/XxYouDeaDPunKxX/zx6-display-control#readme)
+- [Issues](https://github.com/XxYouDeaDPunKxX/zx6-display-control/issues): bugs and feature requests.
+- [Discussions](https://github.com/XxYouDeaDPunKxX/zx6-display-control/discussions): questions and ideas.
+- [Pull requests](https://github.com/XxYouDeaDPunKxX/zx6-display-control/pulls)
+- [MIT license](https://github.com/XxYouDeaDPunKxX/zx6-display-control/blob/main/LICENSE)
+
+## Discovery
+
+This is one canonical HTML page under a GitHub Pages project-site root. Anchor sections do not represent separate pages.
+
+- [Machine-readable manifest](https://xxyoudeadpunkxx.github.io/zx6-display-control/raw-manifest.json)
+- [Sitemap](https://xxyoudeadpunkxx.github.io/zx6-display-control/sitemap.xml)
