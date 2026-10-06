@@ -38,11 +38,11 @@ namespace ZX6DisplayControl {
   public Profile ImportProfile(string path) {
    var document=Read<ProfileDocument>(path);
    if(document==null || document.SchemaVersion!=1 || document.Profile==null || document.Profile.Validate().Count>0) throw new InvalidDataException("Invalid profile or unsupported profile version.");
-   return document.Profile.Copy();
+    return document.Profile.PersonalCopy(document.Profile.Name);
   }
   public void ExportProfile(Profile value,string path) {
    if(value==null || value.Validate().Count>0) throw new InvalidDataException("Invalid profile.");
-   File.WriteAllBytes(path,Serialize(new ProfileDocument{SchemaVersion=1,Profile=value.Copy()}));
+    File.WriteAllBytes(path,Serialize(new ProfileDocument{SchemaVersion=1,Profile=value.PersonalCopy(value.Name)}));
   }
   internal static byte[] Serialize<T>(T value) {
    using(var stream=new MemoryStream()) {new DataContractJsonSerializer(typeof(T)).WriteObject(stream,value);if(stream.Length>1048576) throw new InvalidDataException("Document exceeds the 1 MB limit.");return stream.ToArray();}

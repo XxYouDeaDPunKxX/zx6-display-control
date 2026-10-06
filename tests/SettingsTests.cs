@@ -28,9 +28,8 @@ namespace ZX6DisplayControl.Tests {
    var s=AppSettings.Defaults();Assert.True(!s.StartWithWindows);Assert.Equal("TCPU",s.ActiveProfile.Cpu.TemperatureId);Assert.Equal(2.0,s.ActiveProfile.Cpu.Animation.FixedFps);
    var clone=s.ActiveProfile.Copy();clone.Name="New";s.Add(clone);clone.Cpu.TemperatureId="MISSING";Assert.Equal("TCPU",s.Profiles.Last().Cpu.TemperatureId);
    Assert.Throws<ArgumentException>(()=>s.Add(new Profile{Name="Classic"}));Assert.Throws<ArgumentException>(()=>s.Rename("New"," "));
-   s.Rename("Classic","Principale");Assert.Equal("Principale",s.ActiveProfileName);
-   foreach(string name in s.Profiles.Skip(1).Select(p=>p.Name).ToArray()) s.Delete(name);
-   Assert.Throws<InvalidOperationException>(()=>s.Delete("Principale"));
+   s.ActiveProfileName="New";s.Rename("New","Principale");Assert.Equal("Principale",s.ActiveProfileName);
+   s.Delete("Principale");Assert.Equal("Classic",s.ActiveProfileName);Assert.Equal(8,s.Profiles.Count);
   }
  }
 }

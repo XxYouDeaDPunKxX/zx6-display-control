@@ -7,10 +7,15 @@ namespace ZX6DisplayControl {
  [DataContract] public enum AppTheme {[EnumMember] System,[EnumMember] Light,[EnumMember] Dark}
  [DataContract] public sealed class Profile {
   [DataMember(IsRequired=true)] public string Name {get;set;}
+  [DataMember(EmitDefaultValue=false)] public string BuiltInId {get;set;}
+  public bool IsBuiltIn {get{return !string.IsNullOrEmpty(BuiltInId);}}
   [DataMember(IsRequired=true)] public ChannelSettings Cpu {get;set;}
   [DataMember(IsRequired=true)] public ChannelSettings Gpu {get;set;}
   public Profile() {Cpu=new ChannelSettings{TemperatureId="TCPU"};Gpu=new ChannelSettings{TemperatureId="TGPU1"};}
-  public Profile Copy() {return new Profile{Name=Name,Cpu=Cpu==null?null:Cpu.Copy(),Gpu=Gpu==null?null:Gpu.Copy()};}
+  public Profile Copy() {return new Profile{Name=Name,BuiltInId=BuiltInId,Cpu=Cpu==null?null:Cpu.Copy(),Gpu=Gpu==null?null:Gpu.Copy()};}
+  public Profile PersonalCopy(string name) {var copy=Copy();copy.BuiltInId=null;copy.Name=name.Trim();return copy;}
+  public bool SameContent(Profile other) {return other!=null && SameChannel(Cpu,other.Cpu) && SameChannel(Gpu,other.Gpu);}
+  private static bool SameChannel(ChannelSettings a,ChannelSettings b) {return a!=null && b!=null && a.TemperatureId==b.TemperatureId && a.Paused==b.Paused && a.Animation!=null && a.Animation.Equivalent(b.Animation);}
   public IReadOnlyList<string> Validate() {
    var errors=new List<string>();if(string.IsNullOrWhiteSpace(Name)) errors.Add("Enter a profile name.");
    ValidateChannel(Cpu,"CPU",errors);ValidateChannel(Gpu,"GPU",errors);return errors.AsReadOnly();
@@ -36,21 +41,25 @@ namespace ZX6DisplayControl {
   [DataMember] public int PresetLibraryVersion {get;set;}
   [OnDeserializing] private void ReadDefaults(StreamingContext context) {CloseToTray=true;}
   public static AppSettings Defaults() {
-   return new AppSettings{SchemaVersion=1,Profiles=ProfileLibrary.Create(),ActiveProfileName="Classic",DisplayEnabled=true,CloseToTray=true,PresetLibraryVersion=1};
+   return new AppSettings{SchemaVersion=1,Profiles=ProfileLibrary.Create(),ActiveProfileName="Classic",DisplayEnabled=true,CloseToTray=true,PresetLibraryVersion=2};
   }
   public Profile ActiveProfile {get{return Profiles.Single(p=>string.Equals(p.Name,ActiveProfileName,StringComparison.OrdinalIgnoreCase));}}
   public AppSettings Copy() {return new AppSettings{SchemaVersion=SchemaVersion,Profiles=Profiles.Select(p=>p.Copy()).ToList(),ActiveProfileName=ActiveProfileName,SelectedInstanceId=SelectedInstanceId,DisplayEnabled=DisplayEnabled,StartWithWindows=StartWithWindows,CloseToTrayExplained=CloseToTrayExplained,CloseToTray=CloseToTray,MinimizeToTray=MinimizeToTray,Theme=Theme,PresetLibraryVersion=PresetLibraryVersion};}
   public void Validate() {
    if(!Enum.IsDefined(typeof(AppTheme),Theme))throw new InvalidDataException("Invalid appearance setting.");
    if(SchemaVersion!=1 || Profiles==null || Profiles.Count==0 || Profiles.Any(p=>p==null || p.Validate().Count>0) || Profiles.Select(p=>p.Name).Distinct(StringComparer.OrdinalIgnoreCase).Count()!=Profiles.Count || Profiles.Count(p=>string.Equals(p.Name,ActiveProfileName,StringComparison.OrdinalIgnoreCase))!=1) throw new InvalidDataException("Invalid settings or unsupported settings version.");
+   if(PresetLibraryVersion>=2) {
+    var library=ProfileLibrary.Create();
+    if(Profiles.Count(p=>p.IsBuiltIn)!=library.Count || library.Any(p=>Profiles.Count(v=>v.BuiltInId==p.BuiltInId && v.Name==p.Name && v.SameContent(p))!=1))throw new InvalidDataException("Built-in profiles cannot be changed. Save a personal copy instead.");
+   }
   }
-  public void Add(Profile profile) {if(profile==null || profile.Validate().Count>0) throw new ArgumentException("Invalid profile.");EnsureAvailable(profile.Name,null);Profiles.Add(profile.Copy());}
+  public void Add(Profile profile) {if(profile==null || profile.Validate().Count>0) throw new ArgumentException("Invalid profile.");EnsureAvailable(profile.Name,null);Profiles.Add(profile.PersonalCopy(profile.Name));}
   public void Rename(string name,string newName) {
-   EnsureAvailable(newName,name);var profile=Profiles.Single(p=>p.Name==name);profile.Name=newName.Trim();if(string.Equals(ActiveProfileName,name,StringComparison.OrdinalIgnoreCase)) ActiveProfileName=profile.Name;
+   var profile=Profiles.Single(p=>string.Equals(p.Name,name,StringComparison.OrdinalIgnoreCase));if(profile.IsBuiltIn)throw new InvalidOperationException("Built-in profiles cannot be renamed. Create a personal copy instead.");EnsureAvailable(newName,profile.Name);profile.Name=newName.Trim();if(string.Equals(ActiveProfileName,name,StringComparison.OrdinalIgnoreCase)) ActiveProfileName=profile.Name;
   }
   public void Delete(string name) {
    if(Profiles.Count<=1) throw new InvalidOperationException("Keep at least one profile.");
-   var profile=Profiles.Single(p=>p.Name==name);Profiles.Remove(profile);if(ActiveProfileName==name) ActiveProfileName=Profiles[0].Name;
+   var profile=Profiles.Single(p=>string.Equals(p.Name,name,StringComparison.OrdinalIgnoreCase));if(profile.IsBuiltIn)throw new InvalidOperationException("Built-in profiles cannot be deleted.");Profiles.Remove(profile);if(string.Equals(ActiveProfileName,name,StringComparison.OrdinalIgnoreCase)) ActiveProfileName=Profiles[0].Name;
   }
   private void EnsureAvailable(string name,string except) {
    if(string.IsNullOrWhiteSpace(name) || Profiles.Any(p=>p.Name!=except && string.Equals(p.Name,name.Trim(),StringComparison.OrdinalIgnoreCase))) throw new ArgumentException("Enter a name that is not already used by another profile.");
