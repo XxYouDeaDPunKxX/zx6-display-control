@@ -7,6 +7,7 @@ using System.Windows.Forms;
 
 namespace ZX6DisplayControl.Tests {
  public static class UpdateTests {
+  private const string FutureRelease="99.0.0-beta.1";
   private sealed class HeldStartup:IStartupStore {
    public readonly ManualResetEventSlim Release=new ManualResetEventSlim();
    public string Read(){if(!Release.Wait(5000))throw new TimeoutException("fixture");return null;}
@@ -73,9 +74,9 @@ namespace ZX6DisplayControl.Tests {
      Assert.Equal(0,calls);form.StartPosition=FormStartPosition.Manual;form.Location=new System.Drawing.Point(-20000,-20000);form.Show();
      UiTestPump.Until(()=>calls==1);var cpu=UiBindingTests.Find<ChannelControl>(form,"CpuChannel");var speed=UiBindingTests.Find<TextBox>(cpu,"FixedFps");speed.Text="3";
      Assert.True(cpu.Enabled,"A network request must not disable profile editing");bool responsive=false;form.BeginInvoke(new Action(()=>responsive=true));UiTestPump.Until(()=>responsive);
-     pending.SetResult(Releases("0.1.0-beta.2"));UiTestPump.Until(()=>UiBindingTests.Find<Button>(form,"OpenRelease").Enabled);
-     Assert.True(UiBindingTests.Find<Label>(form,"UpdateStatus").Text.Contains("0.1.0-beta.2"));Assert.Equal("3",speed.Text);Assert.Equal(0,controller.Applied);
-     var notice=UiBindingTests.Find<LinkLabel>(form,"UpdateNotice");Assert.True(notice.Visible && notice.Text.Contains("0.1.0-beta.2"),"New releases must have a visible notice outside Settings");
+     pending.SetResult(Releases(FutureRelease));UiTestPump.Until(()=>UiBindingTests.Find<Button>(form,"OpenRelease").Enabled);
+     Assert.True(UiBindingTests.Find<Label>(form,"UpdateStatus").Text.Contains(FutureRelease));Assert.Equal("3",speed.Text);Assert.Equal(0,controller.Applied);
+     var notice=UiBindingTests.Find<LinkLabel>(form,"UpdateNotice");Assert.True(notice.Visible && notice.Text.Contains(FutureRelease),"New releases must have a visible notice outside Settings");
      Assert.True(!File.Exists(Path.Combine(dir.Path,"settings.json")),"Checking must not commit pending edits");
     }
    }

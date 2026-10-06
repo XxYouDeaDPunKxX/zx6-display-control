@@ -26,7 +26,7 @@ namespace ZX6DisplayControl {
        if(args.Contains("--tray"))form.StartInTray();
        if(loaded.Warning!=null)MessageBox.Show(form,loaded.Warning,"Settings recovered",MessageBoxButtons.OK,MessageBoxIcon.Warning);
       };
-      log.Write("start","Z-X6 Display Control 0.1.0-beta.1");
+      log.Write("start","Z-X6 Display Control "+UpdateService.CurrentVersion);
       try {Application.Run(form);}finally{SystemEvents.PowerModeChanged-=power;controller.Stop();bool ended=controller.Completion.Wait(2000);string error=controller.FailureMessage??(controller.State==null?null:controller.State.CleanupError);log.Write("stop",!ended?"Shutdown requested; cleanup has not completed.":error??"Controller stopped; USB cleanup completed.");}
      }
     }

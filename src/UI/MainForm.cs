@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 namespace ZX6DisplayControl {
  public sealed partial class MainForm:Form {
-  private async Task ExportDiagnostics() {lastSaveFeedback="Export canceled.";using(var dialog=new SaveFileDialog{Filter="Diagnostics text|*.txt",FileName="holder-diagnostics.txt",OverwritePrompt=true})if(dialog.ShowDialog(this)==DialogResult.OK){string path=dialog.FileName;var state=controller.State;var snapshot=saved.Copy();await Task.Run(()=>log.Export(path,state,snapshot,"0.1.0-beta.1"));lastSaveFeedback="Diagnostics exported.";}}
+  private async Task ExportDiagnostics() {lastSaveFeedback="Export canceled.";using(var dialog=new SaveFileDialog{Filter="Diagnostics text|*.txt",FileName="holder-diagnostics.txt",OverwritePrompt=true})if(dialog.ShowDialog(this)==DialogResult.OK){string path=dialog.FileName;var state=controller.State;var snapshot=saved.Copy();await Task.Run(()=>log.Export(path,state,snapshot,UpdateService.CurrentVersion));lastSaveFeedback="Diagnostics exported.";}}
   private async void Attempt(Action action) {Exception failure=null;try{action();}catch(Exception e){failure=e;}if(failure!=null){await log.WriteAsync("action failed",failure.Message,failure);ShowActionError(failure);}}
   private async void AttemptAsync(Func<Task> action) {try{await action();}catch(Exception e){ShowActionError(e);}}
   private void ShowActionError(Exception error){if(!IsDisposed && !Disposing && !closing)AppDialog.Show(this,error.Message,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Warning);}

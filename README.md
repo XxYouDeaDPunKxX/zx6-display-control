@@ -24,7 +24,8 @@ again and resumes updates when valid AIDA64 readings return.
 
 ## 📦 Before you start
 
-**Current version: `0.1.0-beta.1`.** This is a beta build and the executable is unsigned.
+**Current version: `0.1.0-beta.2`.** This is a beta build and the executable is unsigned.
+See the [changelog](CHANGELOG.md) for changes and upgrade notes.
 
 You need:
 
@@ -62,7 +63,7 @@ profiles and tray behavior. Hover over a control or press **F1** for help in the
 
 ### 🔄 Updating the app
 
-The current source checks GitHub at startup, at most once every 24 hours, and
+The app checks GitHub at startup, at most once every 24 hours, and
 shows a link when a newer version is available. Published betas are included.
 **Settings & About > Check for updates** checks immediately. To disable automatic
 checks, clear **Check for updates at startup** and select **Save preferences**.
@@ -75,7 +76,7 @@ registration when enabled. The app never downloads or installs an update itself.
 
 ## 📸 Screenshots
 
-Current source interface, shown with sample readings. The published beta may differ.
+The beta.2 interface, shown with sample readings.
 
 **Display:** both readouts and animations beside the CPU/GPU controls.
 

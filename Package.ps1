@@ -16,7 +16,9 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'LICENSE') -Destination $stage
 $revision=(& git -C $PSScriptRoot rev-parse HEAD).Trim()
 if($LASTEXITCODE -ne 0){throw 'Git revision is unavailable.'}
 if((& git -C $PSScriptRoot status --porcelain)){throw 'Commit changes before packaging so that the source archive matches the build.'}
-@('Z-X6 Display Control 0.1.0-beta.1',('Source commit: '+$revision),('Packaged: '+[DateTimeOffset]::Now.ToString('o'))) | Set-Content -LiteralPath (Join-Path $stage 'Version.txt') -Encoding UTF8
+$version=[Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $stage 'ZX6DisplayControl.exe')).ProductVersion
+if([string]::IsNullOrWhiteSpace($version)){throw 'Application version is unavailable.'}
+@(('Z-X6 Display Control '+$version),('Source commit: '+$revision),('Packaged: '+[DateTimeOffset]::Now.ToString('o'))) | Set-Content -LiteralPath (Join-Path $stage 'Version.txt') -Encoding UTF8
 $archive=Join-Path $dist 'ZX6DisplayControl.zip'
 $source=Join-Path $dist 'ZX6DisplayControl-source.zip'
 Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -Force

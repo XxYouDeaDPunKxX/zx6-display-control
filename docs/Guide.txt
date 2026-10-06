@@ -1,4 +1,4 @@
-Z-X6 DISPLAY CONTROL — 0.1.0-beta.1
+Z-X6 DISPLAY CONTROL — 0.1.0-beta.2
 
 Get started
 Extract the entire folder, keeping ZX6DisplayControl.Core.dll beside ZX6DisplayControl.exe. Run the EXE.
