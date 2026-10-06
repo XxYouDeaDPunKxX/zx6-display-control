@@ -51,7 +51,7 @@ namespace ZX6DisplayControl {
   private string shutdownStatus,operationName,lastSaveFeedback;
   private TaskCompletionSource<bool> operationIdle;
   private Control settingsPage;
-  private bool dirty {get{return ProfilePending || PreferencesPending;}}
+  private bool dirty {get{return ContentChanged || PreferencesPending;}}
   public event Action BringToFrontRequested;
 
   public MainForm(AppSettings settings,SettingsStore store,ISessionController controller,EventLog log,StartupRegistration startup,string exePath) {

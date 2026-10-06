@@ -7,6 +7,7 @@ namespace ZX6DisplayControl {
  internal static class Program {
   [STAThread] private static void Main(string[] args) {
    Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
+   Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
    if(args.Any(a=>a!="--tray")){MessageBox.Show("The only supported launch option is --tray.","Z-X6 Display Control");return;}
    string directory=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ZX6DisplayControl");
    var log=new EventLog(directory);
@@ -15,7 +16,7 @@ namespace ZX6DisplayControl {
      if(!instance.TryAcquire()){instance.SignalExistingWindow();return;}
      var store=new SettingsStore(directory);var loaded=store.Load();var settings=loaded.Settings;
      var initial=new SessionConfiguration{Cpu=settings.ActiveProfile.Cpu.Copy(),Gpu=settings.ActiveProfile.Gpu.Copy(),DisplayEnabled=settings.DisplayEnabled};
-     using(var controller=new SessionController(()=>new HolderSession(new SharedMemoryReader(),new DeviceDiscovery(),new SerialTransport(),new MonotonicClock(),s=>log.Write("session",s)),initial))
+     using(var controller=new SessionController(()=>new HolderSession(new SharedMemoryReader(),new DeviceDiscovery(),new SerialTransport(),new MonotonicClock(),s=>log.Write("session",s)),initial,(message,error)=>log.Write("controller failure",message,error)))
      using(var form=new MainForm(settings,store,controller,log,new StartupRegistration(),Application.ExecutablePath)) {
       PowerModeChangedEventHandler power=(s,e)=>{if(e.Mode==PowerModes.Suspend)controller.Suspend();else if(e.Mode==PowerModes.Resume)controller.Resume();};
       SystemEvents.PowerModeChanged+=power;
@@ -29,7 +30,7 @@ namespace ZX6DisplayControl {
       try {Application.Run(form);}finally{SystemEvents.PowerModeChanged-=power;controller.Stop();bool ended=controller.Completion.Wait(2000);string error=controller.FailureMessage??(controller.State==null?null:controller.State.CleanupError);log.Write("stop",!ended?"Shutdown requested; cleanup has not completed.":error??"Controller stopped; USB cleanup completed.");}
      }
     }
-   }catch(Exception e){log.Write("fatal",e.Message);MessageBox.Show("The app could not continue: "+e.Message+"\n\nLog: "+directory,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Error);}
+   }catch(Exception e){log.Write("fatal",e.Message,e);MessageBox.Show("The app could not continue: "+e.Message+"\n\nLog: "+directory,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Error);}
   }
  }
 }

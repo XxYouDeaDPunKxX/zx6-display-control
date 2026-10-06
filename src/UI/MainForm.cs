@@ -23,7 +23,7 @@ namespace ZX6DisplayControl {
    try {
     if(busy){var pending=operationIdle.Task;if(await Task.WhenAny(pending,Task.Delay(5000))!=pending){if(IsDisposed || Disposing)return;shutdownStatus="Still finishing the current file operation. The app will close when it completes.";RefreshFromState();}await pending;}if(IsDisposed || Disposing)return;
     if(askAfterOperation && dirty){decision=ask();if(decision!=DialogResult.Yes && decision!=DialogResult.No){closing=false;SetEditingEnabled(true);RefreshFromState();return;}}
-    if(decision==DialogResult.Yes)await RunOperation("Save changes",async()=>{if(ProfilePending)await ApplyCore();if(PreferencesPending)await SavePreferencesCore();},true);
+    if(decision==DialogResult.Yes)await RunOperation("Save changes",async()=>{if(ContentChanged)await ApplyCore();if(PreferencesPending)await SavePreferencesCore();},true);
     if(IsDisposed || Disposing)return;shutdownStatus="Stopping controller…";controller.Stop();RefreshFromState();
     if(await Task.WhenAny(controller.Completion,Task.Delay(5000))!=controller.Completion) {
      if(IsDisposed || Disposing)return;shutdownStatus="Still waiting for the controller to release the USB port…";RefreshFromState();

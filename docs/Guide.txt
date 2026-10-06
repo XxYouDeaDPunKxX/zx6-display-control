@@ -35,13 +35,15 @@ Choosing another unit adapts known ranges (% and °C). For RPM, watts and other 
 review and confirm the range in Advanced settings. No thresholds are inferred for them.
 Pause animation holds only that bar; valid temperature numbers continue updating.
 The Display tab shows both temperature readouts and animated levels together.
-Output sent to display uses the controller’s current output. Preview · not applied
+Output sent to display uses the controller’s last completed transmission. Preview · not applied
 shows an edited or selected profile that has not been activated yet. This is a
 representation of commands: the holder does not report its physical screen state.
 Off, disconnected and stopped states clear the preview. Missing draft temperatures
-are shown as dashes. Changing modes retains valid ranges, sources and timing.
+leave the readout blank. Changing modes retains valid ranges, sources and timing.
 Choosing an animation preset explicitly replaces its parameters.
 The holder displays whole degrees from 0 to 99 °C; fractions are truncated.
+Above 99 °C it stays on and shows 99. The app warns with the actual temperature;
+sensor-driven animations continue using the original reading.
 The app has no controls for brightness, RGB lighting, custom images or firmware updates.
 
 Profiles and saving
@@ -64,9 +66,12 @@ More contains rename, JSON import/export and delete. Built-ins cannot be renamed
 or deleted. These collection actions save immediately and preserve unrelated edits.
 Export writes the saved version, not an unsaved draft. Import keeps every existing
 profile and assigns an available name to the imported copy. Deletion asks for a
-confirmation; Cancel is the default. The previous collection remains in the backup.
+confirmation; Cancel is the default. Export first to keep a lasting copy: the
+ordinary settings backup rotates again at the next save, including a power toggle.
 Older customized built-ins are preserved automatically as personal profiles when
-settings load. The original built-ins become available again.
+settings load. The original built-ins become available again. The first save after
+this migration preserves the old file as settings.before-profile-library-v2.json;
+later saves leave that snapshot unchanged.
 
 Daily operation
 Settings & About > Close to tray keeps the controller running when the window closes.
@@ -90,12 +95,16 @@ selected and Save preferences to repair the registration.
 Appearance offers Light, Dark or System. Theme previews immediately; Save preferences
 keeps it and Revert preferences restores the saved theme. Windows high contrast takes precedence. System follows
 the Windows app color preference; native file pickers retain Windows styling.
+The app scales to the system DPI at startup. It may look blurred when moved to a
+monitor using a different scale; per-monitor DPI changes are not supported.
 
 Missing data and recovery
 Turning the display off preserves that choice across reconnects and suspend/resume.
 Missing temperature data for over five seconds requests display off. Valid data resumes
 updates automatically, provided the display is enabled. Losing only an animation sensor
 holds that bar while temperature numbers continue updating.
+If Windows denies access to AIDA64 shared memory, reopen both apps under the same
+Windows account and permission level.
 Last reading marks cached values when AIDA64 is unavailable. A stationary reading does
 not prove a sensor is stale: AIDA64 supplies no production timestamp in this export.
 The AIDA64 and Display status buttons open Connection with current status and
@@ -114,7 +123,9 @@ Settings & About can open %LOCALAPPDATA%\ZX6DisplayControl. It contains settings
 settings.previous.json and up to two 1 MB log files. Invalid settings files are retained
 during recovery. Diagnostics exports selected IDs, the active profile, status, counters
 and recent events; it does not include AIDA64's INI/license or the entire sensor catalog.
-The app does not transmit data over the network. Inspect reports before sharing them.
+The app does not transmit data over the network. Inspect reports before sharing them:
+profile names, paths and exception details may contain your Windows user name or
+other personal information.
 To remove the app: disable Start with Windows, Save preferences, Exit, then remove the extracted
 folder. Local settings can be retained for later use.
 

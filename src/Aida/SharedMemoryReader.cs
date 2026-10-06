@@ -16,7 +16,7 @@ namespace ZX6DisplayControl {
      return ExportParser.Parse(buffer,nowMilliseconds);
     }
    } catch(FileNotFoundException) {return SensorReadResult.Failure("ExportMissing","Enable shared memory in AIDA64 Preferences > Hardware monitoring > External applications.");}
-     catch(UnauthorizedAccessException) {return SensorReadResult.Failure("AccessDenied","Access to AIDA64 shared memory was denied.");}
+     catch(UnauthorizedAccessException) {return SensorReadResult.Failure("AccessDenied","Windows denied access to AIDA64 shared memory. Reopen both apps under the same Windows account and permission level.");}
      catch(IOException) {return SensorReadResult.Failure("ReadError","AIDA64 read failed. Retrying automatically.");}
   }
   private static bool AidaExists() {var processes=Process.GetProcessesByName("aida64");bool found=processes.Length>0;foreach(var process in processes) process.Dispose();return found;}

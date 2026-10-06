@@ -18,7 +18,7 @@ namespace ZX6DisplayControl {
   public event EventHandler SelectionChanged;
   public SensorPicker(bool temperaturesOnly) {
    this.temperaturesOnly=temperaturesOnly;Height=50;MinimumSize=new Size(240,50);Margin=new Padding(0,0,0,6);
-   choice.AccessibleDescription=temperaturesOnly?"Choose the AIDA64 temperature for this side's number. The holder displays whole degrees from 0 to 99 °C; fractions are truncated.":"Choose the exported AIDA64 sensor that controls this bar's speed or level. The temperature number uses its own sensor.";
+   choice.AccessibleDescription=temperaturesOnly?"Choose the AIDA64 temperature for this side's number. The holder displays whole degrees up to 99 °C. Higher readings show 99 on the holder and their actual value here.":"Choose the exported AIDA64 sensor that controls this bar's speed or level. The temperature number uses its own sensor.";
    var layout=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=2,RowCount=3};layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,65));layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,35));
    layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
    layout.Controls.Add(choice,0,0);layout.SetColumnSpan(choice,2);layout.Controls.Add(info,0,1);layout.Controls.Add(find,1,1);layout.Controls.Add(search,0,2);layout.Controls.Add(categories,1,2);Controls.Add(layout);search.Visible=false;categories.Visible=false;
@@ -56,9 +56,9 @@ namespace ZX6DisplayControl {
   }
   private static string Describe(SensorValue value) {return SensorPresentation.Describe(value);}
   private void ShowInfo() {
-   var s=SelectedSensor;bool invalid=temperaturesOnly && s!=null && (!s.Number.HasValue || s.Number.Value<0 || s.Number.Value>99);
-   info.Text=s==null?(string.IsNullOrEmpty(selectedId)?"Select an exported AIDA64 sensor":"Unavailable · export this sensor in AIDA64"):(!available?"Last reading: ":"")+(s.Number.HasValue?s.Number.Value.ToString("0.##",CultureInfo.CurrentCulture):"Non-numeric value")+" "+(s.Unit??"· unit unknown")+(invalid?" · display needs 0–99 °C":"");
-   info.ForeColor=invalid || s==null?UiTheme.Warning:UiTheme.Muted;
+   var s=SelectedSensor;bool invalid=temperaturesOnly && s!=null && (!s.Number.HasValue || s.Number.Value<0),limited=temperaturesOnly && s!=null && s.Number.HasValue && s.Number.Value>99;
+   info.Text=s==null?(string.IsNullOrEmpty(selectedId)?"Select an exported AIDA64 sensor":"Unavailable · export this sensor in AIDA64"):(!available?"Last reading: ":"")+(s.Number.HasValue?s.Number.Value.ToString("0.##",CultureInfo.CurrentCulture):"Non-numeric value")+" "+(s.Unit??"· unit unknown")+(invalid?" · invalid temperature":limited?" · shown as 99 °C":"");
+   info.ForeColor=invalid || limited || s==null?UiTheme.Warning:UiTheme.Muted;
   }
   private sealed class Choice {public readonly string Id;private readonly string label;public Choice(string id,string label){Id=id;this.label=label;}public override string ToString(){return label;}}
  }

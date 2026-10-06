@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
 using System.Linq;
 namespace ZX6DisplayControl {
  public sealed class HolderSession {
@@ -74,14 +75,17 @@ namespace ZX6DisplayControl {
    snapshot=currentSnapshot;validReads++;
    double c,g;
    if(!Temperature(config.Cpu.TemperatureId,out c) || !Temperature(config.Gpu.TemperatureId,out g)) {
-    aidaStatus="TemperatureInvalid";aidaMessage="Display temperature missing or outside 0–99 °C. Check "+config.Cpu.TemperatureId+" and "+config.Gpu.TemperatureId+".";return;
+    aidaStatus="TemperatureInvalid";aidaMessage="Display temperature missing, non-numeric or below 0 °C. Check "+config.Cpu.TemperatureId+" and "+config.Gpu.TemperatureId+".";return;
    }
-   cpuTemperature=c;gpuTemperature=g;lastGood=now;aidaStatus="Ready";aidaMessage="";
+   cpuTemperature=Math.Min(c,99);gpuTemperature=Math.Min(g,99);lastGood=now;
+   bool limited=c>99 || g>99;aidaStatus=limited?"TemperatureLimited":"Ready";
+   aidaMessage=limited?"Display limit: "+string.Join("; ",new[]{TemperatureLimit("CPU",c),TemperatureLimit("GPU",g)}.Where(s=>s!=null))+".":"";
   }
+  private static string TemperatureLimit(string side,double value) {return value>99?side+" "+value.ToString("0.##",CultureInfo.InvariantCulture)+" °C (shown as 99 °C)":null;}
   private bool Temperature(string id,out double value) {
    value=0;SensorValue row;
    if(currentSnapshot==null || !currentSnapshot.Values.TryGetValue(id,out row) || row.Kind!="temp" || !row.Number.HasValue) return false;
-   value=row.Number.Value;return AnimationSettings.Finite(value) && value>=0 && value<=99;
+   value=row.Number.Value;return AnimationSettings.Finite(value) && value>=0;
   }
   private double? AnimationValue(ChannelSettings channel) {SensorValue value;return currentSnapshot!=null && !string.IsNullOrEmpty(channel.Animation.SensorId) && currentSnapshot.Values.TryGetValue(channel.Animation.SensorId,out value)?value.Number:null;}
   private IReadOnlyList<HolderDevice> FindDevices() {return discovery.Find().Where(d=>string.Equals(d.InstanceId,DeviceDiscovery.ExpectedInstance,StringComparison.OrdinalIgnoreCase) && string.Equals(d.Serial,"USB35INCHIPSV2",StringComparison.OrdinalIgnoreCase) && System.Text.RegularExpressions.Regex.IsMatch(d.PortName??"",@"^COM[1-9][0-9]*$")).ToList().AsReadOnly();}

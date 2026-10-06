@@ -135,7 +135,9 @@ The sensor picker can filter by name, ID and measurement type.
 Each display side has two independent choices:
 
 - `TemperatureId` supplies its temperature number. It must identify a numeric
-  `temp` sensor with a value in **0–99 °C**.
+  `temp` sensor with a non-negative value. The two-digit display shows at most
+  **99 °C**; above that, it stays on at 99 while the app warns with the actual
+  reading. Fractions are truncated. Animation still uses the original sensor value.
 - `Animation.SensorId` supplies its bar animation when the selected mode needs
   a sensor. It can differ from the displayed temperature source.
 
@@ -376,11 +378,16 @@ The protected preset library contains:
 
 - `settings.json`: current app settings, schema version `1`.
 - `settings.previous.json`: the previous valid settings.
+- `settings.before-profile-library-v2.json`: the original settings before the
+  first save that upgrades the built-in profile library. Later saves do not replace it.
 - `settings.corrupt-*.json`: an invalid current file retained when a new save
   replaces it.
 
 Saves write a uniquely named temporary file before replacing the current
-file. A valid previous file becomes the backup. Loading tries current
+file. A valid previous file becomes the backup; this one-generation backup rotates
+on every save, including power and tray changes. Export personal profiles to keep
+lasting copies. The separate migration snapshot is retained even if recovery
+started from the previous-settings file. Loading tries current
 settings, then the backup, then defaults; recovery reports a warning and
 retains the original files. Imported and stored JSON documents are limited
 to **1 MiB**.
@@ -407,8 +414,9 @@ the previous registry value is restored if settings persistence fails.
 Light, Dark and System appearance preview immediately; **Save preferences** keeps
 the choice and **Revert preferences** restores it. System follows the Windows app color preference,
 checked every three seconds, while high contrast takes precedence.
-Native file pickers keep Windows styling. The interface uses DPI scaling
-and F1/hover help for its controls.
+Native file pickers keep Windows styling. The interface scales to the system DPI
+at startup and provides F1/hover help. Moving between monitors with different
+scaling may blur the window; per-monitor DPI changes are not supported.
 
 ### 🩺 Diagnostics and local data
 
@@ -424,13 +432,16 @@ catalog, detected display, connection states, receipt time and counters:
 [EventLog.cs](src/Diagnostics/EventLog.cs) retains the latest **200 events**
 in memory. It writes `events.log` and rotates it to `events.previous.log`
 when the next entry would exceed **1 MiB**. Session transitions, file-operation
-results and periodic counters are recorded. Disk-log failures remain visible
+results and periodic counters are recorded. Unexpected controller failures are
+logged with exception details immediately, before cleanup. Unhandled UI errors
+are logged before the app closes. Disk-log failures remain visible
 in the UI even when the file cannot be written.
 
 A diagnostic export includes app version, device and connection status,
 counters, the active profile as JSON, available log files and current-session
 events. It does not include AIDA64's INI/license or the complete sensor catalog.
-Review the report before sharing it.
+Review the report before sharing it: profile names, paths and exception details
+can contain personal information, including the Windows user name.
 
 ### 🛠️ Build, packaging and source traceability
 
@@ -438,6 +449,9 @@ Build requirements are Windows PowerShell 5.1, the .NET Framework C# compiler
 and the .NET Framework 4.7.2 Developer Pack reference assemblies. There are no
 NuGet dependencies or restore step. [Build.ps1](Build.ps1) invokes `csc.exe`
 directly with C# 5, optimization and warnings treated as errors.
+The repository has no automated CI workflow. Hash checks below verify that a
+package matches its local source/build record; they do not promise byte-identical
+rebuilds on another machine.
 
 From the source folder:
 

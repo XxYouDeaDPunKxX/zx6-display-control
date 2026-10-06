@@ -28,12 +28,26 @@ namespace ZX6DisplayControl {
    try {
     File.WriteAllBytes(temporary,bytes);
     if(File.Exists(MainPath)) {
-     bool valid=true;
-     try {Read<AppSettings>(MainPath).Validate();} catch(Exception e) {if(!Recoverable(e))throw;valid=false;}
-     if(valid) File.Replace(temporary,MainPath,BackupPath);
-     else {File.Move(MainPath,Path.Combine(directory,"settings.corrupt-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+"-"+Guid.NewGuid().ToString("N")+".json"));File.Move(temporary,MainPath);}
-    } else File.Move(temporary,MainPath);
+     bool valid=true;AppSettings previous=null;
+     try {previous=Read<AppSettings>(MainPath);previous.Validate();} catch(Exception e) {if(!Recoverable(e))throw;valid=false;}
+     if(valid) {PreserveMigrationSource(MainPath,previous,value);PreserveRecoveryMigration(value);File.Replace(temporary,MainPath,BackupPath);}
+     else {PreserveRecoveryMigration(value);File.Move(MainPath,Path.Combine(directory,"settings.corrupt-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+"-"+Guid.NewGuid().ToString("N")+".json"));File.Move(temporary,MainPath);}
+    } else {PreserveRecoveryMigration(value);File.Move(temporary,MainPath);}
    } finally {if(File.Exists(temporary)) File.Delete(temporary);}
+  }
+  private void PreserveRecoveryMigration(AppSettings next) {
+   if(next.PresetLibraryVersion<2 || File.Exists(Path.Combine(directory,"settings.before-profile-library-v2.json")) || !File.Exists(BackupPath))return;AppSettings previous;
+   try {previous=Read<AppSettings>(BackupPath);previous.Validate();}
+   catch(Exception e) {if(!Recoverable(e))throw;return;}
+   PreserveMigrationSource(BackupPath,previous,next);
+  }
+  private void PreserveMigrationSource(string source,AppSettings previous,AppSettings next) {
+   if(previous.PresetLibraryVersion>=2 || next.PresetLibraryVersion<2)return;
+   string destination=Path.Combine(directory,"settings.before-profile-library-v2.json");
+   if(File.Exists(destination))return;
+   string temporary=destination+"."+Guid.NewGuid().ToString("N")+".tmp";
+   try {File.Copy(source,temporary);File.Move(temporary,destination);}
+   finally {if(File.Exists(temporary))File.Delete(temporary);}
   }
   public Profile ImportProfile(string path) {
    var document=Read<ProfileDocument>(path);

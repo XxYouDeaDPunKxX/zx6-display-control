@@ -116,7 +116,7 @@ namespace ZX6DisplayControl {
     string name=NameDialog.Ask(this,"Rename profile",selected);if(name==null)return;collection.Rename(selected,name);resultName=name;
    }else if(action=="Delete") {
     if(current.IsBuiltIn)throw new InvalidOperationException("Built-in profiles cannot be deleted.");
-    if(!AppDialog.Confirm(this,"Delete “"+selected+"”?"+(selected==editing.Name && ContentChanged?" Unsaved edits to this profile will also be discarded.":"")+"\nThe settings backup retains the previous collection.","Delete profile","Delete profile"))return;
+    if(!AppDialog.Confirm(this,"Delete “"+selected+"”?"+(selected==editing.Name && ContentChanged?" Unsaved edits to this profile will also be discarded.":"")+"\nExport the profile first if you want to keep a copy.","Delete profile","Delete profile"))return;
     collection.Delete(selected);reload=selected==editing.Name;
    }else if(action=="Import") {
     using(var dialog=new OpenFileDialog{Title="Import profile",Filter="Profile JSON|*.json"}) {

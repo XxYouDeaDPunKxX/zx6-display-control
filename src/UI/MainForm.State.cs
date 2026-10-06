@@ -30,9 +30,10 @@ namespace ZX6DisplayControl {
     trayStatus.Text=failed?"Controller stopped":"Starting controller…";
     displayPreview.ShowOutput(failed?"Controller stopped":"Waiting for the controller",null,null,null,null,false);return;
    }
-   bool available=!failed && (state.AidaStatus=="Ready" || state.AidaStatus=="TemperatureInvalid");
-   aidaStatus.Text=failed?"AIDA64 · readings stopped":state.AidaStatus=="Ready"?"AIDA64 · sensors ready":state.AidaStatus=="TemperatureInvalid"?"AIDA64 · check sensors":"AIDA64 · unavailable";
-   aidaStatus.ForeColor=available?UiTheme.Success:UiTheme.Warning;
+   bool limited=state.AidaStatus=="TemperatureLimited";
+   bool available=!failed && (state.AidaStatus=="Ready" || limited || state.AidaStatus=="TemperatureInvalid");
+   aidaStatus.Text=failed?"AIDA64 · readings stopped":limited?"AIDA64 · above 99 °C":state.AidaStatus=="Ready"?"AIDA64 · sensors ready":state.AidaStatus=="TemperatureInvalid"?"AIDA64 · check sensors":"AIDA64 · unavailable";
+   aidaStatus.ForeColor=!failed && state.AidaStatus=="Ready"?UiTheme.Success:UiTheme.Warning;
    holderStatus.Text=failed?"Display · controller stopped":"Display · "+(state.Connected && state.DisplayOff?"off":DeviceText(state.DeviceStatus));holderStatus.ForeColor=state.Connected && !failed?UiTheme.Success:UiTheme.Warning;
    power.Text=saved.DisplayEnabled?"Turn display off":"Turn display on";power.Enabled=trayPower.Enabled=!busy && !failed;
    notice.Text=string.Join(" ",new[]{failed?"The controller stopped. Exit and reopen the app to reconnect.":state.Error,log.LastError==null?null:"Log file unavailable: "+log.LastError}.Where(x=>!string.IsNullOrEmpty(x)));notice.Visible=!string.IsNullOrWhiteSpace(notice.Text);
@@ -47,7 +48,7 @@ namespace ZX6DisplayControl {
      var draft=ReadDraft();c=cpuPreview.Advance(draft.Cpu.Animation,SensorNumber(state.Snapshot,draft.Cpu.Animation.SensorId),elapsed,draft.Cpu.Paused);
      g=gpuPreview.Advance(draft.Gpu.Animation,SensorNumber(state.Snapshot,draft.Gpu.Animation.SensorId),elapsed,draft.Gpu.Paused);
      ct=Temperature(state.Snapshot,draft.Cpu.TemperatureId);gt=Temperature(state.Snapshot,draft.Gpu.TemperatureId);caption="Preview · not applied";
-    }else if(!pending) {c=state.Cpu;g=state.Gpu;ct=state.CpuNumber;gt=state.GpuNumber;caption=state.AidaStatus=="Ready"?"Output sent to display":"Last valid output · check sensors";}
+    }else if(!pending) {c=state.Cpu;g=state.Gpu;ct=state.CpuNumber;gt=state.GpuNumber;caption=limited?"Output sent · limited to 99 °C":state.AidaStatus=="Ready"?"Output sent to display":"Last valid output · check sensors";}
     else caption="Preview unavailable · check settings";
    }
    displayPreview.ShowOutput(caption,ct,gt,c==null?(int?)null:c.Frame,g==null?(int?)null:g.Frame,pending);
@@ -59,7 +60,7 @@ namespace ZX6DisplayControl {
   }
   private static bool HasOpenDropDown(Control root) {var box=root as ComboBox;if(box!=null && box.IsHandleCreated && box.DroppedDown)return true;foreach(Control child in root.Controls)if(HasOpenDropDown(child))return true;return false;}
   private static double? SensorNumber(SensorSnapshot snapshot,string id) {SensorValue row;return snapshot!=null && id!=null && snapshot.Values.TryGetValue(id,out row)?row.Number:null;}
-  private static int? Temperature(SensorSnapshot snapshot,string id) {double? value=SensorNumber(snapshot,id);return value.HasValue && value.Value>=0 && value.Value<=99?(int?)Math.Floor(value.Value):null;}
+  private static int? Temperature(SensorSnapshot snapshot,string id) {SensorValue row;if(snapshot==null || id==null || !snapshot.Values.TryGetValue(id,out row) || row.Kind!="temp")return null;double? value=row.Number;return value.HasValue && AnimationSettings.Finite(value.Value) && value.Value>=0?(int?)Math.Floor(Math.Min(99,value.Value)):null;}
   private static string DeviceText(string state) {switch(state){case "Connected":return "connected";case "Initializing":return "connecting";case "PortBusy":return "port in use";case "Ambiguous":return "disconnect extra holders";case "Suspended":return "suspended";case "Stopped":return "stopped";case "ConnectionError":return "connection error";default:return "disconnected";}}
  }
 }

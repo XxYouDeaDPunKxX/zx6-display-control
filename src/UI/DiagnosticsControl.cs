@@ -34,7 +34,7 @@ namespace ZX6DisplayControl {
    events.Text=string.Join(Environment.NewLine,log.Recent());events.SelectionStart=preserve?Math.Min(start,events.TextLength):events.TextLength;events.SelectionLength=preserve?Math.Min(length,events.TextLength-events.SelectionStart):0;if(!preserve)events.ScrollToCaret();
   }
   public void UpdateState(SessionState value,bool? effectiveAvailability=null) {
-   bool available=effectiveAvailability??(value.AidaStatus=="Ready" || value.AidaStatus=="TemperatureInvalid");
+   bool available=effectiveAvailability??(value.AidaStatus=="Ready" || value.AidaStatus=="TemperatureLimited" || value.AidaStatus=="TemperatureInvalid");
    if(value.Snapshot!=null && !object.ReferenceEquals(observedRead,value.Snapshot)){observedRead=value.Snapshot;lastReadAt=DateTimeOffset.Now;}
    status.Text="USB descriptor: Turing / UsbMonitor\nUSB 1A86:5722 · USB35INCHIPSV2 · "+(value.PortName??"no open port")+"\nValid reads: "+value.ValidReads+" · Read errors: "+value.ReadErrors+" · Writes: "+value.Writes+"\n"+(lastReadAt.HasValue?"Last received: "+lastReadAt.Value.ToString("HH:mm:ss")+" · ":"")+(available?"Unchanged values can be normal.":"Readings stopped · showing the last readings.");
    devices.Text=value.Devices.Count==0?"Z-X6 display: not detected":value.Devices.Count==1?"Z-X6 display: "+value.Devices[0]:"Multiple matching displays found. Connect one holder at a time.";

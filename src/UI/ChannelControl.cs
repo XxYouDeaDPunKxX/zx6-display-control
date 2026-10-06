@@ -13,7 +13,7 @@ namespace ZX6DisplayControl {
   private readonly ComboBox smoothing=Combo("FilterSeconds","Off","1 second","2 seconds","5 seconds");
   private readonly ComboBox simplePreset=Combo("SimplePreset","Slow","Normal","Fast","Follow usage","Follow temperature","Custom");
   private readonly CheckBox advanced=new CheckBox{Name="AdvancedOptions",Text="Advanced settings",AutoSize=true};
-  private readonly Label explanation=new Label{AutoSize=true,Dock=DockStyle.Fill,ForeColor=Color.DimGray};
+  private readonly Label explanation=new Label{Name="PresetExplanation",AutoSize=true,Dock=DockStyle.Fill,ForeColor=Color.DimGray};
   private readonly TextBox inputMin=Field("InputMin"),inputMax=Field("InputMax"),fixedFps=Field("FixedFps"),minFps=Field("MinFps"),maxFps=Field("MaxFps"),hysteresis=Field("HysteresisPercent");
   private readonly NumericUpDown fixedFrame=new NumericUpDown{Name="FixedFrame",Minimum=0,Maximum=7,Dock=DockStyle.Fill};
   private readonly CheckBox invert=new CheckBox{Text="Invert sensor response",AutoSize=true};
@@ -55,7 +55,7 @@ namespace ZX6DisplayControl {
   private static TextBox Field(string name) {return new TextBox{Name=name,Dock=DockStyle.Fill};}
   private static double Number(TextBox box) {double value;if(!double.TryParse(box.Text,NumberStyles.Float,CultureInfo.CurrentCulture,out value) || !AnimationSettings.Finite(value)) throw new FormatException("Enter a valid number for "+box.AccessibleName+".");return value;}
   public ChannelSettings GetDraft() {
-   return new ChannelSettings{TemperatureId=temperature.SelectedId,Paused=mode.SelectedIndex!=2 && pause.Checked,Animation=new AnimationSettings{Mode=(AnimationMode)mode.SelectedIndex,Sequence=(SequenceKind)sequence.SelectedIndex,RateMode=(AnimationRateMode)rate.SelectedIndex,SensorId=source.SelectedId,InputMin=Number(inputMin),InputMax=Number(inputMax),FixedFps=Number(fixedFps),MinFps=Number(minFps),MaxFps=Number(maxFps),FilterSeconds=filterValues[Math.Max(0,smoothing.SelectedIndex)],HysteresisPercent=Number(hysteresis),FixedFrame=(int)fixedFrame.Value,Invert=invert.Checked}};
+   return new ChannelSettings{TemperatureId=temperature.SelectedId,Paused=pause.Checked,Animation=new AnimationSettings{Mode=(AnimationMode)mode.SelectedIndex,Sequence=(SequenceKind)sequence.SelectedIndex,RateMode=(AnimationRateMode)rate.SelectedIndex,SensorId=source.SelectedId,InputMin=Number(inputMin),InputMax=Number(inputMax),FixedFps=Number(fixedFps),MinFps=Number(minFps),MaxFps=Number(maxFps),FilterSeconds=filterValues[Math.Max(0,smoothing.SelectedIndex)],HysteresisPercent=Number(hysteresis),FixedFrame=(int)fixedFrame.Value,Invert=invert.Checked}};
   }
   public IReadOnlyList<string> ValidationErrors() {
    var errors=new List<string>();try {var c=GetDraft();if(string.IsNullOrWhiteSpace(c.TemperatureId)) errors.Add("Choose a display temperature.");errors.AddRange(c.Animation.Validate());if(c.Animation.NeedsSource && unknownRange && !confirmRange.Checked) errors.Add("Review and confirm this sensor range in Advanced settings.");} catch(FormatException e) {errors.Add(e.Message);}return errors.AsReadOnly();
@@ -68,7 +68,7 @@ namespace ZX6DisplayControl {
     fixedFrame.Value=a.FixedFrame;invert.Checked=a.Invert;pause.Checked=settings.Paused;unknownRange=false;confirmRange.Checked=false;advanced.Checked=false;sourceUnit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;SetPresetChoices();simplePreset.SelectedItem=AnimationPresets.Match(a,isGpu,settings.TemperatureId);
    } finally {loading=false;}UpdateVisibility();error.Text="";
   }
-  public void SetCatalog(SensorSnapshot catalog,bool deferStructure=false) {temperature.SetSnapshot(catalog,deferStructure);source.SetSnapshot(catalog,deferStructure);var unit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;sourceUnit=unit;captions[inputMin].Text="Minimum input"+(unit==null?"":" ("+unit+")");captions[inputMax].Text="Maximum input"+(unit==null?"":" ("+unit+")");}
+  public void SetCatalog(SensorSnapshot catalog,bool deferStructure=false) {temperature.SetSnapshot(catalog,deferStructure);source.SetSnapshot(catalog,deferStructure);if(deferStructure)return;var unit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;sourceUnit=unit;captions[inputMin].Text="Minimum input"+(unit==null?"":" ("+unit+")");captions[inputMax].Text="Maximum input"+(unit==null?"":" ("+unit+")");UpdateExplanation();}
   public void SetAvailable(bool value) {temperature.SetAvailable(value);source.SetAvailable(value);}
   public void SetPreview(AnimationOutput output) {
    if(output==null) {lastPreview=null;preview.Text="No display output";return;}lastPreview=output;
@@ -84,9 +84,12 @@ namespace ZX6DisplayControl {
    VisibleRow(source,sensor);foreach(var control in new Control[]{inputMin,inputMax,smoothing,invert}) VisibleRow(control,sensor && details);
    VisibleRow(minFps,cycle && sensor && details);VisibleRow(maxFps,cycle && sensor && details);VisibleRow(hysteresis,mode.SelectedIndex==1 && details);VisibleRow(fixedFrame,mode.SelectedIndex==2);VisibleRow(confirmRange,sensor && unknownRange && details);
    VisibleRow(pause,mode.SelectedIndex!=2);
-   string preset=simplePreset.SelectedItem as string;
-   VisibleRow(explanation,mode.SelectedIndex!=2 && preset=="Custom");
-   explanation.Text=preset=="Follow usage"?(mode.SelectedIndex==1?"Level follows ":"Speed follows ")+(isGpu?"GPU usage.":"CPU usage."):preset=="Follow temperature"?(mode.SelectedIndex==1?"Level follows ":"Speed follows ")+"the display temperature (30–80 °C).":preset=="Custom"?(sensor?"Sensor range: "+inputMin.Text+"–"+inputMax.Text+" "+(source.SelectedSensor==null?"":source.SelectedSensor.Unit)+".":"Custom speed"):"Constant speed";
+   UpdateExplanation();
+  }
+  private void UpdateExplanation() {
+   string preset=simplePreset.SelectedItem as string;bool sensor=mode.SelectedIndex==1 || (mode.SelectedIndex==0 && rate.SelectedIndex==1);
+   string unit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;
+   explanation.Text=preset=="Follow usage"?(mode.SelectedIndex==1?"Level follows ":"Speed follows ")+(isGpu?"GPU usage.":"CPU usage."):preset=="Follow temperature"?(mode.SelectedIndex==1?"Level follows ":"Speed follows ")+"the display temperature (30–80 °C).":preset=="Custom"?(sensor?"Sensor range: "+inputMin.Text+"–"+inputMax.Text+(string.IsNullOrEmpty(unit)?"":" "+unit)+".":"Custom speed."):"Constant speed · "+fixedFps.Text+" fps.";
   }
   private void SetPresetChoices() {simplePreset.Items.Clear();if(mode.SelectedIndex==0)simplePreset.Items.AddRange(new object[]{"Slow","Normal","Fast"});simplePreset.Items.AddRange(new object[]{"Follow usage","Follow temperature","Custom"});}
   private void ModeChanged() {

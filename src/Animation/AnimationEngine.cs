@@ -31,7 +31,7 @@ namespace ZX6DisplayControl {
    }
    double fps=settings.RateMode==AnimationRateMode.Sensor?Frequency(normalized,settings.MinFps,settings.MaxFps):settings.FixedFps;
    if(settings.Mode==AnimationMode.Cycle) output.FramesPerSecond=fps;
-   if(paused) {phase=0;wasPaused=true;return output;}
+   if(paused && settings.Mode!=AnimationMode.Fixed) {phase=0;wasPaused=true;return output;}
    if(settings.Mode==AnimationMode.Fixed) frame=settings.FixedFrame;
    else if(settings.Mode==AnimationMode.SensorLevel) {
     int candidate=(int)Math.Floor(7*normalized);
