@@ -3,7 +3,7 @@
   "projectTitle": "Z-X6 Display Control",
   "description": "Portable Windows control for the Z-X6 GPU support bracket display: AIDA64 temperatures, independent CPU/GPU bar animations, protected presets and personal profiles.",
   "branch": "main",
-  "folders": ["docs"],
+  "folders": [],
   "excludeFolders": ["docs/screenshots", "src", "tests", "tools", "bin", "obj", "dist"],
   "excludeFiles": ["LICENSE"],
   "rules": []
