@@ -6,7 +6,7 @@
 
 - Canonical landing page: https://xxyoudeadpunkxx.github.io/zx6-display-control/
 - Repository and technical documentation: https://github.com/XxYouDeaDPunKxX/zx6-display-control
-- Current release: 0.1.0-beta.1 (public beta; unsigned executable)
+- Current release: 0.1.0-beta.2 (public beta; unsigned executable)
 - License: MIT
 - Platform: Windows with .NET Framework 4.7.2 or later
 - Sensor source: AIDA64 shared memory
@@ -14,7 +14,7 @@
 
 ## What the app controls
 
-Two temperature readouts and two independent bars with eight levels. Users choose CPU/GPU temperature sources separately from animation sources. Bars support fill, empty, bounce, random, sensor-level and fixed-level behavior. Profiles can be edited, saved, duplicated, imported and exported. Tray controls and optional Windows startup are included.
+Two temperature readouts and two independent bars with eight levels. Users choose CPU/GPU temperature sources separately from animation sources. Bars support fill, empty, bounce, random, sensor-level and fixed-level behavior. Eight built-in profiles are protected. Editing one creates a personal copy. Custom profiles can be saved, duplicated, imported and exported as JSON. The app includes an animated preview of outgoing display commands, tray controls and optional Windows startup. An optional daily startup check and a manual update check notify users about newer GitHub releases; updates are downloaded and installed by the user.
 
 ## Requirements and limits
 
@@ -24,10 +24,10 @@ AIDA64 must be installed, running and configured to export the selected sensors 
 
 ## Downloads
 
-- [Portable Windows app](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/ZX6DisplayControl.zip): extract the full ZIP and keep the Core DLL beside the EXE.
-- [Source archive](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/ZX6DisplayControl-source.zip): source, tools and documentation for the beta release.
-- [Checksums](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/SHA256.txt): hashes for both archives and the portable files.
-- [Release notes](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/tag/v0.1.0-beta.1)
+- [Portable Windows app](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.2/ZX6DisplayControl.zip): extract the full ZIP and keep the Core DLL beside the EXE.
+- [Source archive](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.2/ZX6DisplayControl-source.zip): source, tools and documentation for the beta release.
+- [Checksums](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.2/SHA256.txt): hashes for both archives and the portable files.
+- [Release notes](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/tag/v0.1.0-beta.2)
 
 ## Documentation and contribution
 

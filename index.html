@@ -4,189 +4,196 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Z-X6 Display Control — Your sensors, on your Z-X6</title>
-  <meta name="description" content="A portable Windows app for the Z-X6 GPU holder display. Choose AIDA64 sensors, customize CPU/GPU bar animations and save profiles.">
+  <meta name="theme-color" content="#111416">
+  <title>Z-X6 Display Control | Choose what your Z-X6 shows</title>
+  <meta name="description" content="Choose CPU and GPU temperatures from AIDA64, set the Z-X6 holder’s bar animations and save your own profiles. Free portable Windows app.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://xxyoudeadpunkxx.github.io/zx6-display-control/">
   <link rel="alternate" type="text/plain" href="https://xxyoudeadpunkxx.github.io/zx6-display-control/llms.txt" title="LLM-readable index">
   <link rel="alternate" type="application/json" href="https://xxyoudeadpunkxx.github.io/zx6-display-control/raw-manifest.json" title="Machine-readable manifest">
-  <meta property="og:title" content="Z-X6 Display Control — Your sensors, on your Z-X6">
-  <meta property="og:description" content="A portable Windows app for the Z-X6 GPU holder display. Choose AIDA64 sensors, customize CPU/GPU bar animations and save profiles.">
+  <meta property="og:title" content="Z-X6 Display Control | Choose what your Z-X6 shows">
+  <meta property="og:description" content="Choose CPU and GPU temperatures from AIDA64, set the Z-X6 holder’s bar animations and save your own profiles. Free portable Windows app.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://xxyoudeadpunkxx.github.io/zx6-display-control/">
   <meta property="og:image" content="https://xxyoudeadpunkxx.github.io/zx6-display-control/assets/cpu-settings.png">
-  <meta property="og:image:alt" content="Z-X6 Display Control showing CPU temperature and animation settings">
-  <meta property="og:image:width" content="1232">
-  <meta property="og:image:height" content="1041">
+  <meta property="og:image:alt" content="Z-X6 Display Control with the holder preview, temperature sensor selection and animation controls">
+  <meta property="og:image:width" content="1180">
+  <meta property="og:image:height" content="840">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="assets/holder.ico" type="image/x-icon">
   <link rel="stylesheet" href="styles.css">
+  <script src="preview.js" defer></script>
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareSourceCode",
   "name": "Z-X6 Display Control",
-  "description": "A portable Windows app for the Z-X6 GPU holder display. Choose AIDA64 sensors, customize CPU/GPU bar animations and save profiles.",
+  "description": "Portable Windows app for choosing AIDA64 temperature sensors, configuring the Z-X6 GPU holder’s bar animations and saving profiles.",
   "url": "https://xxyoudeadpunkxx.github.io/zx6-display-control/",
   "mainEntityOfPage": "https://xxyoudeadpunkxx.github.io/zx6-display-control/",
   "codeRepository": "https://github.com/XxYouDeaDPunKxX/zx6-display-control",
   "license": "https://github.com/XxYouDeaDPunKxX/zx6-display-control/blob/main/LICENSE",
   "programmingLanguage": "C#",
   "runtimePlatform": ".NET Framework 4.7.2 on Windows",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "isAccessibleForFree": true,
-  "author": {
-    "@type": "Person",
-    "name": "XxYouDeaDPunKxX",
-    "url": "https://github.com/XxYouDeaDPunKxX"
-  },
+  "author": {"@type": "Person", "name": "XxYouDeaDPunKxX", "url": "https://github.com/XxYouDeaDPunKxX"},
   "about": [
-    {
-      "@type": "Thing",
-      "name": "Z-X6 GPU holder display"
-    },
-    {
-      "@type": "Thing",
-      "name": "AIDA64 shared-memory sensors"
-    }
+    {"@type": "Thing", "name": "Z-X6 GPU holder display"},
+    {"@type": "Thing", "name": "AIDA64 shared-memory sensors"}
   ],
-  "keywords": [
-    "Z-X6",
-    "display control",
-    "AIDA64",
-    "Windows",
-    "CPU temperature",
-    "GPU temperature",
-    "bar animations",
-    "profiles"
-  ]
+  "keywords": ["Z-X6", "AIDA64", "Windows", "CPU temperature", "GPU temperature", "bar animations", "profiles"]
 }
   </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <div class="shell">
-    <header class="site-header">
-      <a class="brand" href="#main" aria-label="Z-X6 Display Control home">
-        <img src="assets/holder.ico" width="32" height="32" alt="">
-        <span>Z-X6 <span class="brand-light">Display Control</span></span>
-      </a>
-      <nav class="site-nav" aria-label="Main navigation">
-        <a href="#controls">Controls</a>
-        <a href="#setup">Setup</a>
-        <a href="https://github.com/XxYouDeaDPunKxX/zx6-display-control">GitHub <span aria-hidden="true">↗</span></a>
-      </nav>
-    </header>
-
-    <main id="main">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="beta-label">Beta 0.1.0-beta.1</span> Portable Windows app</p>
-          <h1 id="hero-title">Your sensors.<br><span>On your Z-X6.</span></h1>
-          <p class="hero-intro">Take control of your GPU holder’s display. Choose CPU and GPU temperature sensors in AIDA64, tune each bar and save your setup as a profile.</p>
-          <div class="actions">
-            <a class="button primary" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.1/ZX6DisplayControl.zip">Download the beta <span aria-hidden="true">↓</span></a>
-            <a class="button secondary" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control">View source <span aria-hidden="true">↗</span></a>
-          </div>
-          <p class="download-note">Free &amp; open source · MIT licensed<br>Windows / .NET Framework 4.7.2+ · AIDA64 required</p>
-          <p class="beta-note">Beta build, unsigned executable. <a href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/tag/v0.1.0-beta.1">Release notes &amp; checksums <span aria-hidden="true">↗</span></a></p>
+  <header class="site-header wrap">
+    <a class="brand" href="#main" aria-label="Z-X6 Display Control home">
+      <img src="assets/holder.ico" width="28" height="28" alt="">
+      <span><strong>Z-X6</strong> Display Control</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#app">Inside the app</a>
+      <a href="#start">Get started</a>
+      <a href="https://github.com/XxYouDeaDPunKxX/zx6-display-control">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="product-type">For the Z-X6 GPU holder</p>
+        <h1 id="hero-title">Choose what<br><span>your Z-X6 shows.</span></h1>
+        <p class="intro">Pick your CPU and GPU temperature sensors in AIDA64. Set how the bars move, then save the combination as your own profile.</p>
+        <div class="hero-actions">
+          <a class="button" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.2/ZX6DisplayControl.zip">Download for Windows <span aria-hidden="true">↓</span></a>
+          <a class="quiet-link" href="#app">See the controls <span aria-hidden="true">↘</span></a>
         </div>
-        <figure class="app-shot hero-shot">
-          <img src="assets/cpu-settings.png" width="1232" height="1041" alt="CPU editor with a temperature sensor, usage-driven bar animation, advanced settings and a level preview" fetchpriority="high">
-          <figcaption><span class="caption-tag">Inside the app</span> CPU controls &amp; sensor selection</figcaption>
-        </figure>
-      </section>
-
-      <section id="controls" class="controls section" aria-labelledby="controls-title">
-        <div class="section-heading">
-          <p class="eyebrow">Make it your setup</p>
-          <h2 id="controls-title">Two sides. Independent controls.</h2>
-          <p>Set the temperature source and bar behavior separately for CPU and GPU.</p>
-        </div>
-        <div class="control-list">
-          <article class="control-item">
-            <span class="item-number" aria-hidden="true">01</span>
-            <h3>Pick your readings</h3>
-            <p>Choose from the sensors AIDA64 exports. Show a different temperature source on either side, including a GPU hotspot when available.</p>
-          </article>
-          <article class="control-item">
-            <span class="item-number" aria-hidden="true">02</span>
-            <h3>Tune the bars</h3>
-            <p>Fill, empty, bounce or random. Keep a steady speed, follow a sensor reading, map usage to a bar level or hold a fixed level.</p>
-          </article>
-          <article class="control-item">
-            <span class="item-number" aria-hidden="true">03</span>
-            <h3>Keep it running</h3>
-            <p>Use the Windows tray, turn the display on or off, and optionally start with Windows. The app reconnects when the USB connection returns.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="profiles section" aria-labelledby="profiles-title">
-        <div class="profiles-copy">
-          <p class="eyebrow">Saved the way you like it</p>
-          <h2 id="profiles-title">A profile for each setup.</h2>
-          <p>Start with eight editable presets, from steady animations to sensor-driven levels. Make your own, duplicate a favorite or import and export profiles as JSON.</p>
-          <p>Preview your edits, then <strong>Apply</strong> to save and activate them. <strong>Revert</strong> restores the saved configuration.</p>
-          <a class="text-link" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control#readme">Explore the app in the README <span aria-hidden="true">↗</span></a>
-        </div>
-        <figure class="app-shot profile-shot">
-          <img src="assets/profiles.png" width="1232" height="1041" alt="Profile collection with saved CPU and GPU configurations, Standard and Creative presets, and profile actions" loading="lazy">
-          <figcaption><span class="caption-tag">Inside the app</span> Profiles &amp; editable presets</figcaption>
-        </figure>
-      </section>
-
-      <section id="setup" class="setup section" aria-labelledby="setup-title">
-        <div class="section-heading">
-          <p class="eyebrow">Before the first reading</p>
-          <h2 id="setup-title">Connect. Configure. Apply.</h2>
-          <p>You’ll need a Z-X6 holder, AIDA64 and Windows with .NET Framework 4.7.2 or later.</p>
-        </div>
-        <ol class="setup-steps">
-          <li>
-            <h3>Extract the whole package</h3>
-            <p>Download the portable ZIP and extract it. Keep <code>ZX6DisplayControl.Core.dll</code> beside <code>ZX6DisplayControl.exe</code>.</p>
-          </li>
-          <li>
-            <h3>Enable AIDA64 shared memory</h3>
-            <p>Open <strong>Preferences → Hardware Monitoring → External Applications</strong>. Enable shared memory and export the sensors you want to use.</p>
-          </li>
-          <li>
-            <h3>Release the port, then apply</h3>
-            <p>Disable AIDA64’s <strong>LCD → Turing</strong> output and close the original GPU LCD utility. Run this app, choose your sensors or a profile and select <strong>Apply</strong>.</p>
-          </li>
-        </ol>
-        <div class="compatibility">
-          <div>
-            <h3>One Z-X6 at a time.</h3>
-            <p>This beta controls the two temperature readouts and their bars. It has no RGB, brightness, custom-image or firmware controls. Other holder models and firmware variants have not been verified.</p>
-          </div>
-          <a class="text-link" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/blob/main/docs/Guide.txt">Read the full setup guide <span aria-hidden="true">↗</span></a>
-        </div>
-      </section>
-
-      <section class="community section" aria-labelledby="community-title">
-        <div>
-          <p class="eyebrow">Open to contributions</p>
-          <h2 id="community-title">Share a preset. Bring an idea.</h2>
-          <p>Ask questions, discuss ideas, report a bug or contribute a change.</p>
-        </div>
-        <div class="community-links">
-          <a class="button secondary" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/discussions">Discussions <span aria-hidden="true">↗</span></a>
-          <a class="button secondary" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/issues">Issues <span aria-hidden="true">↗</span></a>
-          <a class="text-link" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/pulls">Pull requests <span aria-hidden="true">↗</span></a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="footer-top">
-        <div class="license-note">
-          <h2>📄 License</h2>
-          <p>MIT. See <a href="LICENSE">LICENSE</a>.</p>
-        </div>
-        <a class="footer-project" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control">Z-X6 Display Control <span aria-hidden="true">↗</span></a>
+        <p class="release-line"><span class="beta">0.1.0-beta.2</span><span>Free · Portable · Open source</span></p>
+        <p class="requirements-inline">Requires AIDA64 and .NET Framework 4.7.2+.</p>
       </div>
+      <figure class="display-demo" id="display-demo">
+        <div class="demo-topline"><span>Z-X6 / CPU + GPU</span><span>Display example</span></div>
+        <svg class="display-face" viewBox="0 0 480 240" role="img" aria-labelledby="display-title display-description">
+          <title id="display-title">Z-X6 display illustration</title>
+          <desc id="display-description">Example readings of 47 degrees Celsius for CPU and 38 for GPU, with independently animated side bars. This is a demonstration, not a live device connection.</desc>
+          <defs>
+            <linearGradient id="bezel" x2="0" y2="1"><stop stop-color="#4b5054"/><stop offset=".12" stop-color="#272c30"/><stop offset="1" stop-color="#121517"/></linearGradient>
+            <clipPath id="bar-shape"><polygon points="77,47 95,47 54,120 95,193 77,193 36,120"/></clipPath>
+            <g id="cpu-icon" fill="none" stroke="#f7d740" stroke-width="1.5">
+              <path d="M0 0h14v12H0z M4 3h6v6H4z M-3 2h3 M-3 6h3 M-3 10h3 M14 2h3 M14 6h3 M14 10h3 M3-3v3 M7-3v3 M11-3v3 M3 12v3 M7 12v3 M11 12v3"/>
+            </g>
+            <g id="gpu-icon" fill="none" stroke="#f7d740" stroke-width="1.5">
+              <path d="M0 0h14v12H0z M4 3h6v6H4z M15 0h3v14 M3 15h9"/>
+            </g>
+          </defs>
+          <rect x="1" y="1" width="478" height="238" rx="3" fill="url(#bezel)" stroke="#52595e"/>
+          <rect x="8" y="8" width="464" height="224" fill="#040608"/>
+          <g fill="none" stroke="#3cd6f4" stroke-width="1">
+            <path d="M112 26 66 37 20 120 66 207 211 207"/>
+            <path d="M368 26 414 37 460 120 414 207 269 207"/>
+          </g>
+          <g class="cpu-bar" clip-path="url(#bar-shape)">
+            <rect class="bar-segment segment-0" x="34" y="172.143" width="63" height="18.357" style="--lit:#1a9be1"/>
+            <rect class="bar-segment segment-1" x="34" y="151.286" width="63" height="18.357" style="--lit:#18c3f2"/>
+            <rect class="bar-segment segment-2" x="34" y="130.429" width="63" height="18.357" style="--lit:#19e3f9"/>
+            <rect class="bar-segment segment-3" x="34" y="109.571" width="63" height="18.357" style="--lit:#4bf1fd"/>
+            <rect class="bar-segment segment-4" x="34" y="88.714" width="63" height="18.357" style="--lit:#93f7fc"/>
+            <rect class="bar-segment segment-5" x="34" y="67.857" width="63" height="18.357" style="--lit:#d5fdff"/>
+            <rect class="bar-segment segment-6" x="34" y="47.000" width="63" height="18.357" style="--lit:#f4ffff"/>
+          </g>
+          <g transform="translate(480 0) scale(-1 1)">
+            <g class="gpu-bar" clip-path="url(#bar-shape)"><rect class="bar-segment segment-0" x="34" y="172.143" width="63" height="18.357" style="--lit:#1a9be1"/>
+            <rect class="bar-segment segment-1" x="34" y="151.286" width="63" height="18.357" style="--lit:#18c3f2"/>
+            <rect class="bar-segment segment-2" x="34" y="130.429" width="63" height="18.357" style="--lit:#19e3f9"/>
+            <rect class="bar-segment segment-3" x="34" y="109.571" width="63" height="18.357" style="--lit:#4bf1fd"/>
+            <rect class="bar-segment segment-4" x="34" y="88.714" width="63" height="18.357" style="--lit:#93f7fc"/>
+            <rect class="bar-segment segment-5" x="34" y="67.857" width="63" height="18.357" style="--lit:#d5fdff"/>
+            <rect class="bar-segment segment-6" x="34" y="47.000" width="63" height="18.357" style="--lit:#f4ffff"/></g>
+          </g>
+          <g transform="translate(98 0)">
+            <text class="face-temp" x="5" y="60">TEMP</text>
+            <g transform="translate(11 75) skewX(-3.15)"><g transform="translate(0 0)"><polygon points="7,0 31,0 37,5 30,10 8,10 2,5" fill="#10181d"/><polygon points="38,7 38,39 33,44 28,38 28,14" fill="#f5fbfb"/><polygon points="38,49 38,81 28,74 28,55 33,45" fill="#f5fbfb"/><polygon points="7,79 31,79 37,85 30,89 8,89 2,85" fill="#10181d"/><polygon points="0,49 5,45 10,55 10,74 0,81" fill="#10181d"/><polygon points="0,7 10,14 10,38 5,44 0,39" fill="#f5fbfb"/><polygon points="7,40 31,40 36,45 30,50 8,50 2,45" fill="#f5fbfb"/></g><g transform="translate(44 0)"><polygon points="7,0 31,0 37,5 30,10 8,10 2,5" fill="#f5fbfb"/><polygon points="38,7 38,39 33,44 28,38 28,14" fill="#f5fbfb"/><polygon points="38,49 38,81 28,74 28,55 33,45" fill="#f5fbfb"/><polygon points="7,79 31,79 37,85 30,89 8,89 2,85" fill="#10181d"/><polygon points="0,49 5,45 10,55 10,74 0,81" fill="#10181d"/><polygon points="0,7 10,14 10,38 5,44 0,39" fill="#10181d"/><polygon points="7,40 31,40 36,45 30,50 8,50 2,45" fill="#10181d"/></g></g>
+            <text class="face-unit" x="93" y="144">°C</text>
+            <use href="#cpu-icon" x="10" y="184"/>
+            <text class="face-label" x="34" y="195">CPU</text>
+          </g>
+          <g transform="translate(279 0)">
+            <text class="face-temp" x="5" y="60">TEMP</text>
+            <g transform="translate(11 75) skewX(-3.15)"><g transform="translate(0 0)"><polygon points="7,0 31,0 37,5 30,10 8,10 2,5" fill="#f5fbfb"/><polygon points="38,7 38,39 33,44 28,38 28,14" fill="#f5fbfb"/><polygon points="38,49 38,81 28,74 28,55 33,45" fill="#f5fbfb"/><polygon points="7,79 31,79 37,85 30,89 8,89 2,85" fill="#f5fbfb"/><polygon points="0,49 5,45 10,55 10,74 0,81" fill="#10181d"/><polygon points="0,7 10,14 10,38 5,44 0,39" fill="#10181d"/><polygon points="7,40 31,40 36,45 30,50 8,50 2,45" fill="#f5fbfb"/></g><g transform="translate(44 0)"><polygon points="7,0 31,0 37,5 30,10 8,10 2,5" fill="#f5fbfb"/><polygon points="38,7 38,39 33,44 28,38 28,14" fill="#f5fbfb"/><polygon points="38,49 38,81 28,74 28,55 33,45" fill="#f5fbfb"/><polygon points="7,79 31,79 37,85 30,89 8,89 2,85" fill="#f5fbfb"/><polygon points="0,49 5,45 10,55 10,74 0,81" fill="#f5fbfb"/><polygon points="0,7 10,14 10,38 5,44 0,39" fill="#f5fbfb"/><polygon points="7,40 31,40 36,45 30,50 8,50 2,45" fill="#f5fbfb"/></g></g>
+            <text class="face-unit" x="93" y="144">°C</text>
+            <use href="#gpu-icon" x="10" y="184"/>
+            <text class="face-label" x="34" y="195">GPU</text>
+          </g>
+        </svg>
+        <figcaption>
+          <span>Two temperatures. Independent bars.</span>
+          <button id="animation-toggle" type="button" aria-controls="display-demo" hidden>Play animation</button>
+        </figcaption>
+      </figure>
+    </section>
+    <section class="app-section wrap" id="app" aria-labelledby="app-title">
+      <div class="section-heading">
+        <h2 id="app-title">Set the readings.<br>Adjust the movement.</h2>
+        <p>Temperature and animation have separate controls for each side of the display.</p>
+      </div>
+      <div class="app-layout">
+        <figure class="app-shot">
+          <a href="assets/cpu-settings.png" aria-label="Open the full-size app screenshot">
+            <img src="assets/cpu-settings.png" width="1180" height="840" alt="The Display tab: a Z-X6 preview beside CPU sensor, loop animation and speed controls" loading="lazy">
+          </a>
+          <figcaption><span>Z-X6 Display Control · 0.1.0-beta.2</span><a href="assets/cpu-settings.png">View full size <span aria-hidden="true">↗</span></a></figcaption>
+        </figure>
+        <div class="app-notes">
+          <dl>
+            <div>
+              <dt>Choose the temperature you want to see</dt>
+              <dd>Use the sensors AIDA64 exports, including GPU hotspot when available. The app previews the values and bar levels it sends to the holder.</dd>
+            </div>
+            <div>
+              <dt>Let the bars follow your PC</dt>
+              <dd>Map usage to a bar level, vary animation speed with a sensor, or choose a steady loop. CPU and GPU can behave differently.</dd>
+            </div>
+            <div>
+              <dt>Keep a setup you like</dt>
+              <dd>Start with one of eight built-in profiles. Your edits become a personal copy, so the originals stay intact. Export a profile to share it or keep a backup.</dd>
+            </div>
+          </dl>
+          <p class="tray-note">Once configured, leave the app in the Windows tray. You can turn the display off there, and choose whether the app starts with Windows.</p>
+        </div>
+      </div>
+    </section>
+    <section class="start-section wrap" id="start" aria-labelledby="start-title">
+      <div class="start-copy">
+        <h2 id="start-title">Get it running on your <span class="keep-together">Z-X6.</span></h2>
+        <p>You’ll need one Z-X6 holder connected to a Windows PC, with AIDA64 running and shared-memory export enabled.</p>
+        <p>Extract the whole ZIP before opening the app. Disable AIDA64’s Turing LCD output and close any other utility using the holder.</p>
+        <a class="guide-link" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/blob/main/docs/Guide.txt">Follow the setup guide <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="download-panel">
+        <p class="download-version">0.1.0-beta.2 <span>Public beta</span></p>
+        <p class="download-platform">Windows · .NET Framework 4.7.2+</p>
+        <a class="button" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/download/v0.1.0-beta.2/ZX6DisplayControl.zip">Download portable ZIP <span aria-hidden="true">↓</span></a>
+        <p class="download-detail">Unsigned executable. Other holder models and firmware variants have not been verified.</p>
+        <a class="quiet-link" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/tag/v0.1.0-beta.2">Release notes &amp; checksums <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer wrap">
+    <div class="footer-links">
+      <a class="footer-name" href="https://github.com/XxYouDeaDPunKxX/zx6-display-control">Z-X6 Display Control</a>
+      <nav aria-label="Project and support">
+        <a href="https://github.com/XxYouDeaDPunKxX/zx6-display-control">Source</a>
+        <a href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/discussions">Discussions</a>
+        <a href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/issues">Report an issue</a>
+        <a href="https://github.com/XxYouDeaDPunKxX/zx6-display-control/pulls">Contribute</a>
+      </nav>
+    </div>
+    <div class="footer-notes">
+      <details class="license-note">
+        <summary>📄 License</summary>
+        <p>MIT. See <a href="LICENSE">LICENSE</a>.</p>
+      </details>
       <details class="ai-note">
         <summary>🤖 AI-assisted development</summary>
         <p>This project was developed with AI assistance.</p>
@@ -194,12 +201,11 @@
         <p>AI assistance does not make the project automatically correct, complete, or suitable for every use case. Read it, test it, and adapt it to your own context.</p>
       </details>
       <nav class="machine-links" aria-label="Machine-readable project files">
-        <span>Machine-readable</span>
         <a href="llms.txt">llms.txt</a>
         <a href="raw-manifest.json">manifest</a>
         <a href="sitemap.xml">sitemap</a>
       </nav>
-    </footer>
-  </div>
+    </div>
+  </footer>
 </body>
 </html>
