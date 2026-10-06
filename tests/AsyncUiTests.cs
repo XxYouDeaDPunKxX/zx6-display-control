@@ -21,11 +21,12 @@ namespace ZX6DisplayControl.Tests {
     using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(backend),@"C:\Holder.exe")) {
      form.StartPosition=FormStartPosition.Manual;form.Location=new System.Drawing.Point(-20000,-20000);form.Show();Application.DoEvents();
      var cpu=UiBindingTests.Find<ChannelControl>(form,"CpuChannel");UiBindingTests.Find<TextBox>(cpu,"FixedFps").Text="3";
-     var save=form.ApplyChanges();bool asked=false;form.RequestExit(()=>{asked=true;return DialogResult.Cancel;});backend.Release.Set();Assert.Throws<IOException>(()=>UiTestPump.Wait(save));UiTestPump.Until(()=>asked);Application.DoEvents();
+     PublicationPreference(form);var save=form.SavePreferences();bool asked=false;form.RequestExit(()=>{asked=true;return DialogResult.Cancel;});backend.Release.Set();Assert.Throws<IOException>(()=>UiTestPump.Wait(save));UiTestPump.Until(()=>asked);Application.DoEvents();
      Assert.True(!form.IsDisposed && cpu.Enabled,"Cancel left the editor disabled by its parent tab control");
     }
    }
   }
+  private static void PublicationPreference(MainForm form) {form.Controls.Cast<Control>().SelectMany(Flatten).OfType<CheckBox>().Single(x=>x.Text=="Minimize to tray").Checked=true;}
   private static Task InvokeTask(MainForm form,string name) {try{return typeof(MainForm).GetMethod(name,BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).Invoke(form,null) as Task??Task.FromResult(true);}catch(TargetInvocationException e){System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e.InnerException).Throw();throw;}}
   [Test] public static void AsyncUi_SaveDoesNotBlockWhilePersistenceIsSlow() {
    using(var dir=new TempDirectory())using(var rig=new SessionRig()) {rig.At(0);var backend=new HeldStartup();var controller=new FakeController{State=rig.Session.State};
@@ -33,10 +34,10 @@ namespace ZX6DisplayControl.Tests {
      form.StartPosition=FormStartPosition.Manual;form.Location=new System.Drawing.Point(-20000,-20000);form.Show();Application.DoEvents();
      UiBindingTests.Find<TextBox>(UiBindingTests.Find<ChannelControl>(form,"CpuChannel"),"FixedFps").Text="3";
      using(var release=new System.Threading.Timer(s=>backend.Release.Set(),null,1000,Timeout.Infinite)) {
-      var watch=Stopwatch.StartNew();Task save=InvokeTask(form,"ApplyChanges");watch.Stop();
+      var watch=Stopwatch.StartNew();PublicationPreference(form);Task save=InvokeTask(form,"SavePreferences");watch.Stop();
       try{Assert.True(watch.ElapsedMilliseconds<300,"Save blocked UI on persistence");Assert.Equal(0,controller.Applied);bool callback=false;form.BeginInvoke(new Action(()=>callback=true));Application.DoEvents();Assert.True(callback);}
       finally{backend.Release.Set();UiTestPump.Wait(save);}
-      Assert.Equal(1,controller.Applied);Assert.Equal(3.0,new SettingsStore(dir.Path).Load().Settings.ActiveProfile.Cpu.Animation.FixedFps);
+      Assert.Equal(0,controller.Applied);Assert.True(new SettingsStore(dir.Path).Load().Settings.MinimizeToTray);Assert.Equal(2.0,new SettingsStore(dir.Path).Load().Settings.ActiveProfile.Cpu.Animation.FixedFps);
      }
     }
    }
@@ -58,7 +59,7 @@ namespace ZX6DisplayControl.Tests {
    using(var dir=new TempDirectory())using(var rig=new SessionRig()) {rig.At(0);var backend=new HeldStartup{Fail=true};backend.Release.Set();var controller=new DeferredController{State=rig.Session.State};
     using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),controller,new EventLog(dir.Path),new StartupRegistration(backend),@"C:\Holder.exe"))using(var dismiss=new System.Windows.Forms.Timer{Interval=20}) {
      form.StartPosition=FormStartPosition.Manual;form.Location=new System.Drawing.Point(-20000,-20000);form.Show();Application.DoEvents();
-     var cpu=UiBindingTests.Find<ChannelControl>(form,"CpuChannel");UiBindingTests.Find<TextBox>(cpu,"FixedFps").Text="3";bool errorShown=false;
+     var cpu=UiBindingTests.Find<ChannelControl>(form,"CpuChannel");UiBindingTests.Find<TextBox>(cpu,"FixedFps").Text="3";PublicationPreference(form);bool errorShown=false;
      dismiss.Tick+=(s,e)=>{var dialog=Application.OpenForms.Cast<Form>().FirstOrDefault(x=>x!=form && x.Text=="Z-X6 Display Control");if(dialog==null)return;errorShown=true;dialog.DialogResult=DialogResult.OK;};dismiss.Start();
      form.RequestExit(()=>DialogResult.Yes);UiTestPump.Until(()=>errorShown);dismiss.Stop();
      Assert.True(!form.IsDisposed && cpu.Enabled,"Failed exit save left the editor disabled");Assert.Equal(0,controller.Stops);Assert.Equal(3.0,cpu.GetDraft().Animation.FixedFps);
@@ -90,10 +91,10 @@ namespace ZX6DisplayControl.Tests {
    using(var dir=new TempDirectory())using(var rig=new SessionRig()) {rig.At(0);var backend=new HeldStartup();
     using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(backend),@"C:\Holder.exe")) {
      form.StartPosition=FormStartPosition.Manual;form.Location=new System.Drawing.Point(-20000,-20000);form.Show();Application.DoEvents();
-     UiBindingTests.Find<TextBox>(UiBindingTests.Find<ChannelControl>(form,"CpuChannel"),"FixedFps").Text="3";var save=form.ApplyChanges();var args=new FormClosingEventArgs(CloseReason.WindowsShutDown,false);
+     UiBindingTests.Find<TextBox>(UiBindingTests.Find<ChannelControl>(form,"CpuChannel"),"FixedFps").Text="3";PublicationPreference(form);var save=form.SavePreferences();var args=new FormClosingEventArgs(CloseReason.WindowsShutDown,false);
      typeof(Form).GetMethod("OnFormClosing",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(form,new object[]{args});
      try{Assert.True(args.Cancel,"System close abandoned an in-flight settings transaction");}finally{backend.Release.Set();UiTestPump.Wait(save);}
-     UiTestPump.Until(()=>form.IsDisposed);Assert.Equal(3.0,new SettingsStore(dir.Path).Load().Settings.ActiveProfile.Cpu.Animation.FixedFps);
+     UiTestPump.Until(()=>form.IsDisposed);Assert.True(new SettingsStore(dir.Path).Load().Settings.MinimizeToTray);Assert.Equal(2.0,new SettingsStore(dir.Path).Load().Settings.ActiveProfile.Cpu.Animation.FixedFps);
     }
    }
   }

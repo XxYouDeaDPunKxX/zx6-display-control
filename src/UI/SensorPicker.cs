@@ -36,7 +36,7 @@ namespace ZX6DisplayControl {
   }
   public string SelectedId {get{return selectedId;}set{selectedId=value;Populate();}}
   public SensorValue SelectedSensor {get{SensorValue value;return snapshot!=null && selectedId!=null && snapshot.Values.TryGetValue(selectedId,out value)?value:null;}}
-  public void SetSnapshot(SensorSnapshot value) {snapshot=value;if(!choice.DroppedDown) Populate();else ShowInfo();}
+  public void SetSnapshot(SensorSnapshot value,bool deferStructure=false) {snapshot=value;if(!deferStructure && !choice.DroppedDown) Populate();else ShowInfo();}
   public void SetAvailable(bool value) {available=value;ShowInfo();}
   private void Populate() {
    if(updating) return;updating=true;
@@ -55,7 +55,11 @@ namespace ZX6DisplayControl {
    } finally {updating=false;}
   }
   private static string Describe(SensorValue value) {return SensorPresentation.Describe(value);}
-  private void ShowInfo() {var s=SelectedSensor;info.Text=s==null?(string.IsNullOrEmpty(selectedId)?"Select an exported AIDA64 sensor":"Sensor unavailable · selection retained"):(!available?"Last reading: ":"")+(s.Number.HasValue?s.Number.Value.ToString("0.##",CultureInfo.CurrentCulture):"Non-numeric value")+" "+(s.Unit??"· unit unknown");}
+  private void ShowInfo() {
+   var s=SelectedSensor;bool invalid=temperaturesOnly && s!=null && (!s.Number.HasValue || s.Number.Value<0 || s.Number.Value>99);
+   info.Text=s==null?(string.IsNullOrEmpty(selectedId)?"Select an exported AIDA64 sensor":"Unavailable · export this sensor in AIDA64"):(!available?"Last reading: ":"")+(s.Number.HasValue?s.Number.Value.ToString("0.##",CultureInfo.CurrentCulture):"Non-numeric value")+" "+(s.Unit??"· unit unknown")+(invalid?" · display needs 0–99 °C":"");
+   info.ForeColor=invalid || s==null?UiTheme.Warning:UiTheme.Muted;
+  }
   private sealed class Choice {public readonly string Id;private readonly string label;public Choice(string id,string label){Id=id;this.label=label;}public override string ToString(){return label;}}
  }
  internal static class SensorPresentation {

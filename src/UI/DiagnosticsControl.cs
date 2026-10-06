@@ -26,7 +26,7 @@ namespace ZX6DisplayControl {
    var actions=new FlowLayoutPanel{Dock=DockStyle.Fill,AutoSize=true};retry=new Button{Text="Refresh connection",AutoSize=true};export=new Button{Text="Export diagnostics…",AutoSize=true};actions.Controls.Add(retry);actions.Controls.Add(export);layout.Controls.Add(actions,0,3);Controls.Add(layout);
    retry.Click+=(s,e)=>{if(RetryRequested!=null)RetryRequested();};export.Click+=(s,e)=>{if(ExportRequested!=null)ExportRequested();};
   }
-  public void SetActionsEnabled(bool enabled){retry.Enabled=export.Enabled=enabled;}
+  public void SetActionsEnabled(bool enabled,bool canRetry=true){retry.Enabled=enabled && canRetry;export.Enabled=enabled;}
   public void UpdateLog(EventLog log,string action) {
    logStatus.Text=log.LastError==null?(action==null?"Recent events · current session":action+"…"):"Log file unavailable: "+log.LastError;
    logStatus.ForeColor=log.LastError==null?UiTheme.Text:UiTheme.Warning;

@@ -16,7 +16,7 @@ namespace ZX6DisplayControl.Tests {
    using(var dir=new TempDirectory())using(var rig=new SessionRig()) {
     rig.At(0);var registry=new FakeStartupStore{Value="\"C:\\Old\\Holder.exe\" --tray"};var settings=AppSettings.Defaults();settings.StartWithWindows=true;
     using(var form=new MainForm(settings,new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(registry),@"C:\New\Holder.exe")) {
-     StartupCheck(form).Checked=false;UiTestPump.Wait(form.ApplyChanges());Assert.True(registry.Value==null,"Old autorun path still present");
+     StartupCheck(form).Checked=false;UiTestPump.Wait(form.SavePreferences());Assert.True(registry.Value==null,"Old autorun path still present");
     }
    }
   }
@@ -25,7 +25,7 @@ namespace ZX6DisplayControl.Tests {
     rig.At(0);var store=new SettingsStore(dir.Path);var settings=AppSettings.Defaults();store.Save(settings);var controller=new FakeController{State=rig.Session.State};
     using(var form=new MainForm(settings,store,controller,new EventLog(dir.Path),new StartupRegistration(new DeniedStartup()),@"C:\Holder.exe")) {
      Find<TextBox>(Find<ChannelControl>(form,"CpuChannel"),"FixedFps").Text="4";StartupCheck(form).Checked=true;
-     Assert.Throws<UnauthorizedAccessException>(()=>UiTestPump.Wait(form.ApplyChanges()));form.CancelChanges();Assert.Equal(0,controller.Applied);Assert.Equal(2.0,store.Load().Settings.ActiveProfile.Cpu.Animation.FixedFps);Assert.True(!store.Load().Settings.StartWithWindows);
+     Assert.Throws<UnauthorizedAccessException>(()=>UiTestPump.Wait(form.SavePreferences()));form.CancelChanges();Assert.Equal(0,controller.Applied);Assert.Equal(2.0,store.Load().Settings.ActiveProfile.Cpu.Animation.FixedFps);Assert.True(!store.Load().Settings.StartWithWindows);
     }
    }
   }
@@ -34,7 +34,7 @@ namespace ZX6DisplayControl.Tests {
     rig.At(0);string blocked=System.IO.Path.Combine(dir.Path,"blocked");System.IO.File.WriteAllText(blocked,"not a directory");
     var registry=new FakeStartupStore{Value="\"C:\\Old\\Holder.exe\" --tray"};string previous=registry.Value;var controller=new FakeController{State=rig.Session.State};
     using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(blocked),controller,new EventLog(dir.Path),new StartupRegistration(registry),@"C:\New\Holder.exe")) {
-     StartupCheck(form).Checked=true;Assert.Throws<System.IO.IOException>(()=>UiTestPump.Wait(form.ApplyChanges()));Assert.Equal(previous,registry.Value);Assert.Equal(0,controller.Applied);
+     StartupCheck(form).Checked=true;Assert.Throws<System.IO.IOException>(()=>UiTestPump.Wait(form.SavePreferences()));Assert.Equal(previous,registry.Value);Assert.Equal(0,controller.Applied);
     }
    }
   }

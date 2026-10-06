@@ -20,18 +20,17 @@ namespace ZX6DisplayControl {
   private readonly CheckBox pause=new CheckBox{Text="Pause animation",AutoSize=true};
   private readonly CheckBox confirmRange=new CheckBox{Text="Use this sensor range",AutoSize=true};
   private readonly Label error=new Label{AutoSize=true,ForeColor=Color.Firebrick,Dock=DockStyle.Fill};
-  private readonly Label preview=new Label{AutoSize=true,Dock=DockStyle.Fill,Text="Waiting for sensor data"};
-  private readonly ProgressBar level=new ProgressBar{Minimum=0,Maximum=7,Height=14,Dock=DockStyle.Top};
+  private readonly Label preview=new Label{AutoSize=false,Height=48,Dock=DockStyle.Fill,Text="Waiting for sensor data"};
   private readonly TableLayoutPanel table=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,ColumnCount=2,Padding=new Padding(14)};
   private readonly Dictionary<Control,Label> captions=new Dictionary<Control,Label>();
   private bool loading,unknownRange;private string sourceUnit;private readonly bool isGpu;private AnimationOutput lastPreview;private readonly double[] filterValues={0,1,2,5};
   public event EventHandler DraftChanged;
   public ChannelControl(bool gpu=false) {
    isGpu=gpu;
-   AutoScroll=true;BackColor=Color.White;table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,180));table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));Controls.Add(table);
+   AutoScroll=true;BackColor=Color.White;table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,140));table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));Controls.Add(table);
    AddSection("Temperature");AddRow("Sensor",temperature);AddSection("Animation");AddRow("Mode",mode);AddRow("Pattern",sequence);AddRow("Preset",simplePreset);AddRow("",explanation);AddRow("Control sensor",source);AddRow("Level",fixedFrame);AddRow("",advanced);AddRow("Speed control",rate);AddRow("Speed (fps)",fixedFps);
    AddRow("Minimum input",inputMin);AddRow("Maximum input",inputMax);AddRow("Minimum speed (fps)",minFps);AddRow("Maximum speed (fps)",maxFps);
-   AddRow("Response time",smoothing);AddRow("Level hysteresis (%)",hysteresis);AddRow("",invert);AddRow("",confirmRange);AddRow("",pause);AddSection("Preview");AddRow("Animation",preview);AddRow("Bar level",level);AddRow("",error);
+   AddRow("Response time",smoothing);AddRow("Level hysteresis (%)",hysteresis);AddRow("",invert);AddRow("",confirmRange);AddRow("",pause);AddRow("Response",preview);AddRow("",error);
    foreach(var field in new[]{inputMin,inputMax,fixedFps,minFps,maxFps,hysteresis}) field.TextChanged+=(s,e)=>Changed();
    foreach(var combo in new[]{sequence,smoothing}) combo.SelectedIndexChanged+=(s,e)=>Changed();
    rate.SelectedIndexChanged+=(s,e)=>{if(!loading){RepairInactiveFields();Changed();}};
@@ -48,7 +47,7 @@ namespace ZX6DisplayControl {
   }
   private void AddRow(string caption,Control control) {
    int row=table.RowCount++;table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-   var label=new Label{Text=caption,AutoSize=true,MaximumSize=new Size(168,0),Margin=new Padding(0,6,12,4)};control.Margin=new Padding(0,3,0,4);control.Dock=DockStyle.Top;
+   var label=new Label{Text=caption,AutoSize=true,MaximumSize=new Size(128,0),Margin=new Padding(0,6,12,4)};control.Margin=new Padding(0,3,0,4);control.Dock=DockStyle.Top;
    if(!(control is Label) && !string.IsNullOrWhiteSpace(caption))control.AccessibleName=caption;
    table.Controls.Add(label,0,row);table.Controls.Add(control,1,row);captions[control]=label;
   }
@@ -56,7 +55,7 @@ namespace ZX6DisplayControl {
   private static TextBox Field(string name) {return new TextBox{Name=name,Dock=DockStyle.Fill};}
   private static double Number(TextBox box) {double value;if(!double.TryParse(box.Text,NumberStyles.Float,CultureInfo.CurrentCulture,out value) || !AnimationSettings.Finite(value)) throw new FormatException("Enter a valid number for "+box.AccessibleName+".");return value;}
   public ChannelSettings GetDraft() {
-   return new ChannelSettings{TemperatureId=temperature.SelectedId,Paused=pause.Checked,Animation=new AnimationSettings{Mode=(AnimationMode)mode.SelectedIndex,Sequence=(SequenceKind)sequence.SelectedIndex,RateMode=(AnimationRateMode)rate.SelectedIndex,SensorId=source.SelectedId,InputMin=Number(inputMin),InputMax=Number(inputMax),FixedFps=Number(fixedFps),MinFps=Number(minFps),MaxFps=Number(maxFps),FilterSeconds=filterValues[Math.Max(0,smoothing.SelectedIndex)],HysteresisPercent=Number(hysteresis),FixedFrame=(int)fixedFrame.Value,Invert=invert.Checked}};
+   return new ChannelSettings{TemperatureId=temperature.SelectedId,Paused=mode.SelectedIndex!=2 && pause.Checked,Animation=new AnimationSettings{Mode=(AnimationMode)mode.SelectedIndex,Sequence=(SequenceKind)sequence.SelectedIndex,RateMode=(AnimationRateMode)rate.SelectedIndex,SensorId=source.SelectedId,InputMin=Number(inputMin),InputMax=Number(inputMax),FixedFps=Number(fixedFps),MinFps=Number(minFps),MaxFps=Number(maxFps),FilterSeconds=filterValues[Math.Max(0,smoothing.SelectedIndex)],HysteresisPercent=Number(hysteresis),FixedFrame=(int)fixedFrame.Value,Invert=invert.Checked}};
   }
   public IReadOnlyList<string> ValidationErrors() {
    var errors=new List<string>();try {var c=GetDraft();if(string.IsNullOrWhiteSpace(c.TemperatureId)) errors.Add("Choose a display temperature.");errors.AddRange(c.Animation.Validate());if(c.Animation.NeedsSource && unknownRange && !confirmRange.Checked) errors.Add("Review and confirm this sensor range in Advanced settings.");} catch(FormatException e) {errors.Add(e.Message);}return errors.AsReadOnly();
@@ -69,11 +68,11 @@ namespace ZX6DisplayControl {
     fixedFrame.Value=a.FixedFrame;invert.Checked=a.Invert;pause.Checked=settings.Paused;unknownRange=false;confirmRange.Checked=false;advanced.Checked=false;sourceUnit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;SetPresetChoices();simplePreset.SelectedItem=AnimationPresets.Match(a,isGpu,settings.TemperatureId);
    } finally {loading=false;}UpdateVisibility();error.Text="";
   }
-  public void SetCatalog(SensorSnapshot catalog) {temperature.SetSnapshot(catalog);source.SetSnapshot(catalog);var unit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;sourceUnit=unit;captions[inputMin].Text="Minimum input"+(unit==null?"":" ("+unit+")");captions[inputMax].Text="Maximum input"+(unit==null?"":" ("+unit+")");}
+  public void SetCatalog(SensorSnapshot catalog,bool deferStructure=false) {temperature.SetSnapshot(catalog,deferStructure);source.SetSnapshot(catalog,deferStructure);var unit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;sourceUnit=unit;captions[inputMin].Text="Minimum input"+(unit==null?"":" ("+unit+")");captions[inputMax].Text="Maximum input"+(unit==null?"":" ("+unit+")");}
   public void SetAvailable(bool value) {temperature.SetAvailable(value);source.SetAvailable(value);}
   public void SetPreview(AnimationOutput output) {
-   if(output==null) return;lastPreview=output;level.Value=Math.Max(0,Math.Min(7,output.Frame));
-   if(!advanced.Checked){preview.Text=output.SourceMissing?"Control sensor unavailable · holding the last level":pause.Checked?"Paused · temperatures continue updating":(output.FramesPerSecond.HasValue?Format(output.FramesPerSecond)+" fps · ":"")+"Level "+output.Frame+" of 7";return;}
+   if(output==null) {lastPreview=null;preview.Text="No display output";return;}lastPreview=output;
+   if(!advanced.Checked){preview.Text=output.SourceMissing?"Control sensor unavailable · holding the last level":pause.Checked && mode.SelectedIndex!=2?"Paused · temperatures continue updating":(output.FramesPerSecond.HasValue?Format(output.FramesPerSecond)+" fps · ":"")+"Level "+output.Frame+" of 7";return;}
    string reading=output.FilteredValue.HasValue?"Input: "+Format(output.RawValue)+"  →  Smoothed: "+Format(output.FilteredValue)+"\n":"";
    preview.Text=output.SourceMissing?"Sensor unavailable · holding the last level":reading+(output.FramesPerSecond.HasValue?Format(output.FramesPerSecond)+" fps  ·  ":"")+"Level "+output.Frame+"/7"+(output.Clamped?" · at range limit":"");
   }
@@ -84,17 +83,19 @@ namespace ZX6DisplayControl {
    bool details=advanced.Checked;VisibleRow(sequence,cycle);VisibleRow(simplePreset,mode.SelectedIndex!=2);VisibleRow(explanation,mode.SelectedIndex!=2);VisibleRow(advanced,mode.SelectedIndex!=2);VisibleRow(rate,cycle && details);VisibleRow(fixedFps,cycle && rate.SelectedIndex==0 && details);
    VisibleRow(source,sensor);foreach(var control in new Control[]{inputMin,inputMax,smoothing,invert}) VisibleRow(control,sensor && details);
    VisibleRow(minFps,cycle && sensor && details);VisibleRow(maxFps,cycle && sensor && details);VisibleRow(hysteresis,mode.SelectedIndex==1 && details);VisibleRow(fixedFrame,mode.SelectedIndex==2);VisibleRow(confirmRange,sensor && unknownRange && details);
-   advanced.Text=details?"Advanced settings":"Advanced settings";
+   VisibleRow(pause,mode.SelectedIndex!=2);
    string preset=simplePreset.SelectedItem as string;
    VisibleRow(explanation,mode.SelectedIndex!=2 && preset=="Custom");
    explanation.Text=preset=="Follow usage"?(mode.SelectedIndex==1?"Level follows ":"Speed follows ")+(isGpu?"GPU usage.":"CPU usage."):preset=="Follow temperature"?(mode.SelectedIndex==1?"Level follows ":"Speed follows ")+"the display temperature (30–80 °C).":preset=="Custom"?(sensor?"Sensor range: "+inputMin.Text+"–"+inputMax.Text+" "+(source.SelectedSensor==null?"":source.SelectedSensor.Unit)+".":"Custom speed"):"Constant speed";
   }
   private void SetPresetChoices() {simplePreset.Items.Clear();if(mode.SelectedIndex==0)simplePreset.Items.AddRange(new object[]{"Slow","Normal","Fast"});simplePreset.Items.AddRange(new object[]{"Follow usage","Follow temperature","Custom"});}
   private void ModeChanged() {
-   if(loading)return;string selected=simplePreset.SelectedItem as string;
-   if(mode.SelectedIndex==2){ApplyPreset("Normal");return;}
-   loading=true;SetPresetChoices();if(mode.SelectedIndex==1 && selected!="Follow temperature" && selected!="Custom")selected="Follow usage";simplePreset.SelectedItem=selected;loading=false;
-   if(selected!="Custom")ApplyPreset(selected??"Follow usage");else {RepairInactiveFields();Changed();}
+   if(loading)return;
+   loading=true;try {
+    SetPresetChoices();
+    if(mode.SelectedIndex==1 && string.IsNullOrEmpty(source.SelectedId))source.SelectedId=isGpu?"SGPU1UTI":"SCPUUTI";
+   }finally{loading=false;}
+   RepairInactiveFields();Changed();
   }
   private static bool InRange(TextBox box,double min,double max) {try{double value=Number(box);return value>=min && value<=max;}catch(FormatException){return false;}}
   private void RepairInactiveFields() {

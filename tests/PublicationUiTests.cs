@@ -16,7 +16,7 @@ namespace ZX6DisplayControl.Tests {
    using(var dir=new TempDirectory())using(var rig=new SessionRig()) {
     rig.At(0);using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(new FakeStartupStore()),@"C:\Holder.exe")) {
      UiBindingTests.Find<TextBox>(UiBindingTests.Find<ChannelControl>(form,"CpuChannel"),"FixedFps").Text="4";UiTestPump.Wait(form.ApplyChanges());
-     var list=All(form).OfType<ListBox>().Single();Assert.Equal(4.0,list.Items.Cast<Profile>().Single(p=>p.Name=="Classic").Cpu.Animation.FixedFps);
+     var list=All(form).OfType<ListBox>().Single();Assert.Equal(4.0,list.Items.Cast<Profile>().Single(p=>p.Name=="Classic (custom)").Cpu.Animation.FixedFps);
     }
    }
   }
@@ -24,7 +24,7 @@ namespace ZX6DisplayControl.Tests {
    var method=typeof(MainForm).Assembly.GetType("ZX6DisplayControl.AppDialog").GetMethod("Show");
    using(var timer=new Timer{Interval=50}) {
     timer.Tick+=(s,e)=>{var dialog=Application.OpenForms.Cast<Form>().FirstOrDefault(x=>x.Text=="Exit regression");if(dialog==null)return;timer.Stop();typeof(Form).GetMethod("ProcessDialogKey",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(dialog,new object[]{Keys.Escape});};
-    timer.Start();var result=(DialogResult)method.Invoke(null,new object[]{null,"Save changes before exiting?","Exit regression",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question});Assert.Equal(DialogResult.Cancel,result);
+    timer.Start();var result=(DialogResult)method.Invoke(null,new object[]{null,"Save changes before exiting?","Exit regression",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question,null});Assert.Equal(DialogResult.Cancel,result);
    }
   }
   [Test] public static void Publication_HighContrastOverridesAppearance() {
@@ -43,8 +43,8 @@ namespace ZX6DisplayControl.Tests {
     rig.At(0);using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(new FakeStartupStore()),@"C:\Holder.exe")) {
      var theme=UiBindingTests.Find<ComboBox>(form,"ThemeChoice");theme.SelectedItem="Dark";
      var minimize=All(form).OfType<CheckBox>().Single(x=>x.Text=="Minimize to tray");minimize.Checked=true;
-     All(form).OfType<ComboBox>().Single(x=>x.AccessibleName=="Profile").SelectedItem="Thermal";
-     Assert.Equal("Dark",theme.SelectedItem as string);Assert.True(minimize.Checked);UiTestPump.Wait(form.ApplyChanges());
+     UiTestPump.Wait(form.SelectProfile("Thermal",()=>DialogResult.Cancel));
+     Assert.Equal("Dark",theme.SelectedItem as string);Assert.True(minimize.Checked);UiTestPump.Wait(form.ApplyChanges());UiTestPump.Wait(form.SavePreferences());
      var saved=new SettingsStore(dir.Path).Load().Settings;Assert.Equal(AppTheme.Dark,saved.Theme);Assert.True(saved.MinimizeToTray);
     }
    }
@@ -65,8 +65,8 @@ namespace ZX6DisplayControl.Tests {
      form.StartPosition=FormStartPosition.Manual;form.Location=new System.Drawing.Point(-15000,-15000);form.Show();
      var cpu=UiBindingTests.Find<ChannelControl>(form,"CpuChannel");UiBindingTests.Find<TextBox>(cpu,"FixedFps").Text="3";
      form.Close();Assert.True(!form.IsDisposed && !form.Visible);form.ShowWindow();Assert.True(form.Visible);Assert.Equal(3.0,cpu.GetDraft().Animation.FixedFps);
-     var minimize=All(form).OfType<CheckBox>().Single(x=>x.Text=="Minimize to tray");minimize.Checked=true;form.CancelChanges();Assert.True(!minimize.Checked);
-     minimize.Checked=true;UiTestPump.Wait(form.ApplyChanges());form.WindowState=FormWindowState.Minimized;Application.DoEvents();Assert.True(!form.Visible);form.ShowWindow();Assert.Equal(FormWindowState.Normal,form.WindowState);
+     var minimize=All(form).OfType<CheckBox>().Single(x=>x.Text=="Minimize to tray");minimize.Checked=true;form.RevertPreferences();Assert.True(!minimize.Checked);
+     minimize.Checked=true;UiTestPump.Wait(form.SavePreferences());form.WindowState=FormWindowState.Minimized;Application.DoEvents();Assert.True(!form.Visible);form.ShowWindow();Assert.Equal(FormWindowState.Normal,form.WindowState);
      Assert.True(form.RequestExit(()=>DialogResult.No));
     }
    }
@@ -77,8 +77,8 @@ namespace ZX6DisplayControl.Tests {
      var theme=All(form).OfType<ComboBox>().FirstOrDefault(x=>x.Name=="ThemeChoice");Assert.True(theme!=null,"Appearance setting is missing");
      var cpu=UiBindingTests.Find<ChannelControl>(form,"CpuChannel");UiBindingTests.Find<TextBox>(cpu,"FixedFps").Text="3";
      theme.SelectedItem="Dark";Assert.True(form.BackColor.GetBrightness()<0.2);Assert.True(cpu.ForeColor.GetBrightness()>0.7);Assert.Equal(3.0,cpu.GetDraft().Animation.FixedFps);
-     UiTestPump.Wait(form.ApplyChanges());var saved=new SettingsStore(dir.Path).Load().Settings;var property=typeof(AppSettings).GetProperty("Theme");Assert.True(property!=null);Assert.Equal("Dark",property.GetValue(saved,null).ToString());
-     theme.SelectedItem="Light";Assert.True(form.BackColor.GetBrightness()>0.8);form.CancelChanges();Assert.True(form.BackColor.GetBrightness()<0.2);
+     UiTestPump.Wait(form.SavePreferences());var saved=new SettingsStore(dir.Path).Load().Settings;var property=typeof(AppSettings).GetProperty("Theme");Assert.True(property!=null);Assert.Equal("Dark",property.GetValue(saved,null).ToString());
+     theme.SelectedItem="Light";Assert.True(form.BackColor.GetBrightness()>0.8);form.RevertPreferences();Assert.True(form.BackColor.GetBrightness()<0.2);
     }
    }
   }
@@ -100,7 +100,7 @@ namespace ZX6DisplayControl.Tests {
    using(var dir=new TempDirectory())using(var rig=new SessionRig()) {
     rig.At(0);using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(new FakeStartupStore()),@"C:\Holder.exe")) {
      var pages=All(form).OfType<TabPage>().Select(x=>x.Text).ToArray();
-     Assert.True(pages.Contains("Device & setup"));Assert.True(pages.Contains("Settings & About"));
+     Assert.True(pages.Contains("Connection"));Assert.True(pages.Contains("Settings & About"));
      Assert.True(All(form).OfType<Label>().Any(x=>x.Text.Contains("Z-X6")));
     }
    }
