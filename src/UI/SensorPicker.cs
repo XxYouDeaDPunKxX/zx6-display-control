@@ -45,7 +45,13 @@ namespace ZX6DisplayControl {
     if(!string.IsNullOrEmpty(selectedId) && !items.Any(i=>i.Id==selectedId)) {
      var selected=SelectedSensor;items.Insert(0,new Choice(selectedId,selected==null?selectedId+" · unavailable":Describe(selected)));
     }
-    choice.BeginUpdate();choice.Items.Clear();choice.Items.AddRange(items.Cast<object>().ToArray());choice.SelectedIndex=items.FindIndex(i=>i.Id==selectedId);choice.EndUpdate();ShowInfo();
+    bool same=choice.Items.Count==items.Count && choice.Items.Cast<Choice>().Zip(items,(before,after)=>before.Id==after.Id && before.ToString()==after.ToString()).All(equal=>equal);
+    if(!same) {
+     choice.BeginUpdate();
+     try {choice.Items.Clear();choice.Items.AddRange(items.Cast<object>().ToArray());}
+     finally {choice.EndUpdate();}
+    }
+    choice.SelectedIndex=items.FindIndex(i=>i.Id==selectedId);ShowInfo();
    } finally {updating=false;}
   }
   private static string Describe(SensorValue value) {return SensorPresentation.Describe(value);}

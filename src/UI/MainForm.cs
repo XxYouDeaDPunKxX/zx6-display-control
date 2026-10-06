@@ -108,6 +108,8 @@ namespace ZX6DisplayControl {
    diagnostics.SetActionsEnabled(enabled);apply.Enabled=enabled && dirty && CanApply;cancel.Enabled=enabled && dirty;
   }
   public void RefreshFromState() {
+   // Keep open drop-downs stable while the session worker updates the holder.
+   if(!closing && HasOpenDropDown(this))return;
    diagnostics.UpdateLog(log,closing?shutdownStatus:operationName);
    if(closing){notice.Text=shutdownStatus;notice.Visible=true;apply.Enabled=cancel.Enabled=power.Enabled=profileChoice.Enabled=tabs.Enabled=trayPower.Enabled=false;return;}
    if(DateTime.UtcNow>=nextThemeCheck){nextThemeCheck=DateTime.UtcNow.AddSeconds(3);bool systemDark=UiTheme.SystemIsDark(),highContrast=SystemInformation.HighContrast;if(lastHighContrast!=highContrast || (themeChoice.SelectedIndex==0 && lastSystemDark!=systemDark)){lastSystemDark=systemDark;lastHighContrast=highContrast;ApplyTheme();}}
@@ -129,6 +131,12 @@ namespace ZX6DisplayControl {
    tray.Text=("Z-X6 Display Control · "+DeviceText(state.DeviceStatus)).Substring(0,Math.Min(63,("Z-X6 Display Control · "+DeviceText(state.DeviceStatus)).Length));
    trayPower.Text=power.Text;trayStatus.Text=failed?"Controller stopped":state.Connected?(state.DisplayOff?"Display off · ":"Display enabled · ")+ (available?"AIDA64 connected":"AIDA64 unavailable"):"Holder "+DeviceText(state.DeviceStatus);
    if(BringToFrontRequested!=null)BringToFrontRequested();
+  }
+  private static bool HasOpenDropDown(Control root) {
+   var combo=root as ComboBox;
+   if(combo!=null && combo.IsHandleCreated && combo.DroppedDown)return true;
+   foreach(Control child in root.Controls)if(HasOpenDropDown(child))return true;
+   return false;
   }
   private static double? SensorNumber(SensorSnapshot snapshot,string id) {SensorValue row;return snapshot!=null && id!=null && snapshot.Values.TryGetValue(id,out row)?row.Number:null;}
   private static string DeviceText(string state) {switch(state){case "Connected":return "connected";case "Initializing":return "connecting";case "PortBusy":return "port busy";case "Ambiguous":return "multiple displays detected";case "Suspended":return "suspended";case "Stopped":return "stopped";case "ConnectionError":return "connection error";default:return "disconnected";}}
