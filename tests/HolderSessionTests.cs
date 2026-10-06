@@ -2,6 +2,17 @@ using System;
 using System.Linq;
 namespace ZX6DisplayControl.Tests {
  public static class HolderSessionTests {
+  [Test] public static void Review_PublishedOutputMatchesLastSuccessfulPacketBetweenWrites() {
+   using(var r=new SessionRig()) {
+    foreach(long now in new long[]{0,100,225,350,475})r.At(now);
+    var last=r.Serial.Packets.Last(p=>p[5]==169);int count=r.Serial.DataCount;
+    r.Reader.Result=AidaParserTests.Parse(AidaParserTests.Cpu.Replace("42.5","51")+"<temp><id>TGPU1</id><value>46</value></temp>");r.At(500);
+    Assert.Equal(count,r.Serial.DataCount);Assert.Equal((int)last[10],r.Session.State.Cpu.Frame);Assert.Equal((int)last[11],r.Session.State.Gpu.Frame);
+    Assert.Equal(last[6]*10+last[7],r.Session.State.CpuNumber.Value);Assert.Equal(last[8]*10+last[9],r.Session.State.GpuNumber.Value);
+    r.At(600);last=r.Serial.Packets.Last(p=>p[5]==169);Assert.Equal((int)last[10],r.Session.State.Cpu.Frame);Assert.Equal(51,r.Session.State.CpuNumber.Value);
+    r.Serial.FailWrites=true;r.At(725);Assert.True(!r.Session.State.Connected);Assert.True(!r.Session.State.CpuNumber.HasValue);
+   }
+  }
   [Test] public static void Session_SlowOpenStillWaitsOneHundredMilliseconds() {
    using(var r=new SessionRig()) {
     r.Serial.OnOpen=()=>r.Clock.Now=500;r.At(0);r.At(525);Assert.Equal(0,r.Serial.Packets.Count);

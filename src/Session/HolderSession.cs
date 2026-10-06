@@ -11,6 +11,8 @@ namespace ZX6DisplayControl {
   private SensorSnapshot snapshot,currentSnapshot;
   private IReadOnlyList<HolderDevice> devices=new List<HolderDevice>().AsReadOnly();
   private AnimationOutput cpu=new AnimationOutput(),gpu=new AnimationOutput();
+  private AnimationOutput sentCpu,sentGpu;
+  private int sentCpuNumber,sentGpuNumber;
   private long nextRead,nextWrite,nextConnect,initAt,nextPresence,nextReport=60000;
   private long? lastGood,lastAdvance;
   private double cpuTemperature,gpuTemperature;
@@ -50,10 +52,14 @@ namespace ZX6DisplayControl {
     if(port.IsOpen && !initialized && now>=initAt) {Send(PacketCodec.Control(255));initialized=true;deviceStatus="Connected";nextWrite=now;}
     if(initialized && port.IsOpen) {
      bool shouldOff=!config.DisplayEnabled || !lastGood.HasValue || now-lastGood.Value>5000;
-     if(shouldOff) {if(displayOff!=true){Send(PacketCodec.Control(108));displayOff=true;}}
+     if(shouldOff) {if(displayOff!=true){Send(PacketCodec.Control(108));displayOff=true;sentCpu=sentGpu=null;}}
      else {
       if(displayOff!=false) {Send(PacketCodec.Control(109));displayOff=false;}
-      if(now>=nextWrite) {Send(PacketCodec.Encode(cpuTemperature,gpuTemperature,cpu.Frame,gpu.Frame));nextWrite=now+125;}
+      if(now>=nextWrite) {
+       Send(PacketCodec.Encode(cpuTemperature,gpuTemperature,cpu.Frame,gpu.Frame));
+       // Publish only a completed write, not the engines' next unsent frame.
+       sentCpu=cpu;sentGpu=gpu;sentCpuNumber=(int)Math.Floor(cpuTemperature);sentGpuNumber=(int)Math.Floor(gpuTemperature);nextWrite=now+125;
+      }
      }
     }
    } catch(UnauthorizedAccessException) {ConnectionFailed(now,"PortBusy","USB port busy. Close GPULCD and disable the Turing LCD module in AIDA64.");}
@@ -84,19 +90,20 @@ namespace ZX6DisplayControl {
    if(devices.Count!=1) {deviceStatus=devices.Count>1?"Ambiguous":"Disconnected";deviceMessage=devices.Count>1?"Multiple matching displays found. Connect one holder at a time.":"Compatible USB display not found.";return;}
    port.Open(devices[0].PortName);portName=devices[0].PortName;connectedId=devices[0].InstanceId;
    long openedAt=clock.ElapsedMilliseconds;
-   initAt=openedAt+100;nextPresence=openedAt+3000;initialized=false;displayOff=null;deviceStatus="Initializing";deviceMessage="";cleanupError=null;
+   initAt=openedAt+100;nextPresence=openedAt+3000;initialized=false;displayOff=null;sentCpu=sentGpu=null;deviceStatus="Initializing";deviceMessage="";cleanupError=null;
   }
   private void Send(byte[] packet) {port.Write(packet);writes++;}
   private void ConnectionFailed(long now,string code,string message) {CloseConnection(false);deviceStatus=code;deviceMessage=message;nextConnect=now+3000;}
   private void CloseConnection(bool powerOff) {
    try {if(powerOff && port.IsOpen){Send(PacketCodec.Control(108));displayOff=true;}}
    catch(Exception e) {displayOff=null;RecordCleanupError("Display power-off failed",e);}
-   finally {try {port.Close();} catch(Exception e) {RecordCleanupError("USB port close failed",e);}initialized=false;portName=null;connectedId=null;}
+   finally {try {port.Close();} catch(Exception e) {RecordCleanupError("USB port close failed",e);}initialized=false;sentCpu=sentGpu=null;portName=null;connectedId=null;}
   }
   private void RecordCleanupError(string action,Exception error) {string message=action+": "+error.Message;cleanupError=string.IsNullOrEmpty(cleanupError)?message:cleanupError+" | "+message;log("cleanup | "+message);}
   private void Publish() {
    string animationError=(cpu.SourceMissing?"CPU animation sensor unavailable: "+config.Cpu.Animation.SensorId+". ":"")+(gpu.SourceMissing?"GPU animation sensor unavailable: "+config.Gpu.Animation.SensorId+".":"");
-   State=new SessionState{AidaStatus=aidaStatus,DeviceStatus=deviceStatus,Error=string.Join(" ",new[]{aidaMessage,deviceMessage,animationError,cleanupError}.Where(s=>!string.IsNullOrWhiteSpace(s))),CleanupError=cleanupError,DisplayPowerKnown=displayOff.HasValue,Snapshot=snapshot,Cpu=cpu,Gpu=gpu,PortName=portName,RequestedDisplayOn=config.DisplayEnabled,DisplayOff=displayOff==true,Connected=initialized && port.IsOpen,Devices=devices,ValidReads=validReads,ReadErrors=readErrors,Writes=writes,CpuNumber=lastGood.HasValue && displayOff==false?(int?)Math.Floor(cpuTemperature):null,GpuNumber=lastGood.HasValue && displayOff==false?(int?)Math.Floor(gpuTemperature):null};
+   bool outputKnown=initialized && port.IsOpen && displayOff==false && sentCpu!=null;
+   State=new SessionState{AidaStatus=aidaStatus,DeviceStatus=deviceStatus,Error=string.Join(" ",new[]{aidaMessage,deviceMessage,animationError,cleanupError}.Where(s=>!string.IsNullOrWhiteSpace(s))),CleanupError=cleanupError,DisplayPowerKnown=displayOff.HasValue,Snapshot=snapshot,Cpu=outputKnown?sentCpu:null,Gpu=outputKnown?sentGpu:null,PortName=portName,RequestedDisplayOn=config.DisplayEnabled,DisplayOff=displayOff==true,Connected=initialized && port.IsOpen,Devices=devices,ValidReads=validReads,ReadErrors=readErrors,Writes=writes,CpuNumber=outputKnown?(int?)sentCpuNumber:null,GpuNumber=outputKnown?(int?)sentGpuNumber:null};
    string transition=aidaStatus+" | "+deviceStatus+" | "+State.Error;
    if(transition!=lastTransition) {lastTransition=transition;log(transition);}
    if(clock.ElapsedMilliseconds>=nextReport){ReportCounters();nextReport=clock.ElapsedMilliseconds+60000;}

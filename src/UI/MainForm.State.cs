@@ -24,9 +24,11 @@ namespace ZX6DisplayControl {
    Text="Z-X6 Display Control"+(dirty?" · unsaved changes":"");
    var state=controller.State;bool failed=!string.IsNullOrEmpty(controller.FailureMessage);
    if(state==null) {
-    notice.Text=controller.FailureMessage??"Starting controller…";notice.Visible=true;
-    aidaStatus.Text="AIDA64 · waiting";holderStatus.Text=failed?"Display · controller stopped":"Display · connecting…";
-    displayPreview.ShowOutput("Waiting for the controller",null,null,null,null,false);return;
+    notice.Text=failed?"The controller stopped. Exit and reopen the app to reconnect.":"Starting controller…";notice.Visible=true;
+    aidaStatus.Text=failed?"AIDA64 · readings stopped":"AIDA64 · waiting";holderStatus.Text=failed?"Display · controller stopped":"Display · connecting…";
+    power.Enabled=trayPower.Enabled=!busy && !failed;diagnostics.SetActionsEnabled(!busy,!failed);deviceSetup.UpdateUnavailable(failed,!busy);
+    trayStatus.Text=failed?"Controller stopped":"Starting controller…";
+    displayPreview.ShowOutput(failed?"Controller stopped":"Waiting for the controller",null,null,null,null,false);return;
    }
    bool available=!failed && (state.AidaStatus=="Ready" || state.AidaStatus=="TemperatureInvalid");
    aidaStatus.Text=failed?"AIDA64 · readings stopped":state.AidaStatus=="Ready"?"AIDA64 · sensors ready":state.AidaStatus=="TemperatureInvalid"?"AIDA64 · check sensors":"AIDA64 · unavailable";

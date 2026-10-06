@@ -5,6 +5,19 @@ using System.Runtime.Serialization.Json;
 
 namespace ZX6DisplayControl.Tests {
  public static class ProfileProtectionTests {
+  [Test] public static void Review_LegacyWhitespaceNamesPreserveIdentityAndActiveProfile() {
+   using(var dir=new TempDirectory()) {
+    var legacy=AppSettings.Defaults();legacy.PresetLibraryVersion=1;
+    foreach(var p in legacy.Profiles)p.BuiltInId=null;
+    legacy.Profiles.Add(new Profile{Name=" Personal ",Cpu=new ChannelSettings{TemperatureId="TCPUDIO"}});
+    legacy.Profiles.Add(new Profile{Name="Personal "});legacy.Profiles.Add(new Profile{Name="Personal"});legacy.ActiveProfileName=" Personal ";legacy.Validate();
+    using(var stream=File.Create(Path.Combine(dir.Path,"settings.json")))new DataContractJsonSerializer(typeof(AppSettings)).WriteObject(stream,legacy);
+    var store=new SettingsStore(dir.Path);var result=store.Load();Assert.True(result.Warning==null,"A valid legacy collection must not fall back");
+    Assert.Equal(" Personal ",result.Settings.ActiveProfileName);Assert.Equal("TCPUDIO",result.Settings.ActiveProfile.Cpu.TemperatureId);
+    Assert.True(new[]{" Personal ","Personal ","Personal"}.All(name=>result.Settings.Profiles.Any(p=>p.Name==name)));Assert.Equal(11,result.Settings.Profiles.Count);
+    store.Save(result.Settings);Assert.Equal(" Personal ",store.Load().Settings.ActiveProfileName);
+   }
+  }
   [Test] public static void Rework_BuiltInsRejectRenameAndDeletion() {
    var settings=AppSettings.Defaults();
    Assert.Throws<InvalidOperationException>(()=>settings.Rename("Classic","Changed"));

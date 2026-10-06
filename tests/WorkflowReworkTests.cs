@@ -4,6 +4,14 @@ using System.Windows.Forms;
 
 namespace ZX6DisplayControl.Tests {
  public static class WorkflowReworkTests {
+  [Test] public static void Review_FailureBeforeFirstStateOffersStoppedRecovery() {
+   using(var dir=new TempDirectory())using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{FailureMessage="Session factory failed"},new EventLog(dir.Path),new StartupRegistration(new FakeStartupStore()),@"C:\Holder.exe")) {
+    Assert.True(!UiBindingTests.Find<Button>(form,"Power").Enabled,"Power cannot operate without a controller");
+    Assert.True(!UiBindingTests.Find<Button>(form,"Reconnect").Enabled,"Stopped worker cannot retry");
+    Assert.Equal("Controller stopped",UiBindingTests.Find<HolderPreview>(form,"HolderPreview").Caption);
+    Assert.True(UiBindingTests.Find<Button>(form,"ControllerExit").Enabled);
+   }
+  }
   [Test] public static void Rework_FixedLevelIsNotOverriddenByHiddenPause() {
    using(var channel=new ChannelControl()) {
     var value=new ChannelSettings{TemperatureId="TCPU",Paused=true};channel.Load(value,null);

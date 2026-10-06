@@ -86,7 +86,7 @@ namespace ZX6DisplayControl {
   private readonly Label recovery=new Label{AutoSize=true,Dock=DockStyle.Top};
   private readonly Button retry=new Button{Name="Reconnect",Text="Reconnect",AutoSize=true};
   private readonly Button edit=new Button{Text="Choose sensors",AutoSize=true,AccessibleDescription="Open the CPU and GPU temperature controls."};
-  private readonly Button exit=new Button{Text="Exit and reopen",AutoSize=true,AccessibleDescription="Exit the stopped controller. Reopen the app after it has closed."};
+  private readonly Button exit=new Button{Name="ControllerExit",Text="Exit and reopen",AutoSize=true,AccessibleDescription="Exit the stopped controller. Reopen the app after it has closed."};
   public event Action RetryRequested,EditSensorsRequested,ExitRequested;
   public DeviceSetupControl() {
    var table=InfoPage.Layout(this);InfoPage.Heading(table,"Display connection");InfoPage.Add(table,usb);InfoPage.Add(table,recovery);
@@ -102,6 +102,12 @@ namespace ZX6DisplayControl {
    usb.Text=failed?"Controller stopped":value.Connected?"Z-X6 connected · "+value.PortName:"Z-X6 not connected";
    recovery.Text=failed?"Exit the app, then reopen it to restart the controller.":value.DeviceStatus=="Ambiguous"?"More than one matching holder is connected. Disconnect the extra holder to resume updates.":value.DeviceStatus=="PortBusy"?"The USB port is in use. Close the original utility or AIDA64 Turing LCD output, then reconnect.":value.Connected?"The display is detected automatically if its USB port changes.":"Connect the holder's USB cable, then reconnect.";
    aida.Text=failed?"Readings stopped.":value.AidaStatus=="Ready"?"Sensors ready · "+(value.Snapshot==null?0:value.Snapshot.Values.Count)+" exported readings":value.AidaStatus=="TemperatureInvalid"?"A selected temperature is missing or outside 0–99 °C. Choose an exported temperature for each side.":"No current readings. Open AIDA64 and enable shared memory below.";
+   retry.Enabled=enabled && !failed;exit.Visible=failed;exit.Enabled=enabled;edit.Enabled=enabled;
+  }
+  public void UpdateUnavailable(bool failed,bool enabled) {
+   usb.Text=failed?"Controller stopped":"Waiting for the controller";
+   recovery.Text=failed?"Exit the app, then reopen it to restart the controller.":"Checking the USB connection…";
+   aida.Text=failed?"Readings stopped.":"Waiting for AIDA64 readings…";
    retry.Enabled=enabled && !failed;exit.Visible=failed;exit.Enabled=enabled;edit.Enabled=enabled;
   }
  }

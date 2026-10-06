@@ -43,7 +43,7 @@ namespace ZX6DisplayControl {
     if(original!=null && original.SameContent(previous))target=original.Name;
     else {
      target=original==null?previous.Name:UniqueName(reserved,original.Name+" (custom)");
-     var copy=previous.PersonalCopy(target);custom.Add(copy);reserved.Add(copy);
+     var copy=previous.Copy();copy.BuiltInId=null;copy.Name=target;custom.Add(copy);reserved.Add(copy);
     }
     if(string.Equals(settings.ActiveProfileName,previous.Name,StringComparison.OrdinalIgnoreCase))active=target;
    }
