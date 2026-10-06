@@ -4,7 +4,7 @@ Get started
 Extract the entire folder, keeping ZX6DisplayControl.Core.dll beside ZX6DisplayControl.exe. Run the EXE.
 Requires Windows and .NET Framework 4.7.2 or later. Administrator rights are not required.
 Supported device: Z-X6 GPU support bracket with CPU/GPU temperature display.
-This beta supports one Z-X6 at a time. Connect only one compatible holder.
+Connect one Z-X6 holder at a time.
 The tested unit reports Turing / UsbMonitor, USB 1A86:5722 / USB35INCHIPSV2.
 These USB identifiers are used to find its COM port. Other models and firmware
 variants have not been verified, even if they share those identifiers.
@@ -34,23 +34,39 @@ response time, inversion and level hysteresis. Closing it retains custom setting
 Choosing another unit adapts known ranges (% and °C). For RPM, watts and other units,
 review and confirm the range in Advanced settings. No thresholds are inferred for them.
 Pause animation holds only that bar; valid temperature numbers continue updating.
-Preview shows the bar level produced by your current settings. Apply activates them.
+The Display tab shows both temperature readouts and animated levels together.
+Output sent to display uses the controller’s current output. Preview · not applied
+shows an edited or selected profile that has not been activated yet. This is a
+representation of commands: the holder does not report its physical screen state.
+Off, disconnected and stopped states clear the preview. Missing draft temperatures
+are shown as dashes. Changing modes retains valid ranges, sources and timing.
+Choosing an animation preset explicitly replaces its parameters.
 The holder displays whole degrees from 0 to 99 °C; fractions are truncated.
 The app has no controls for brightness, RGB lighting, custom images or firmware updates.
 
-Apply and profiles
-Apply saves your changes and activates the selected profile. Revert discards pending changes.
-During a file operation, editing is temporarily disabled and progress appears above
-the tabs. A failed save keeps the draft available for correction or retry.
-Alt+A applies; Alt+R reverts. Hover over a function or press F1 for contextual help.
-Selecting a profile loads a draft; Apply activates it on the holder.
-Standard presets: Classic (steady fill), Activity (speed follows usage), Thermal
-(speed follows temperature) and Sensor levels (bar height follows usage).
-Creative presets: Random (independent random levels), Breathe (slow fill/empty),
-Counterflow (CPU fills while GPU empties) and Split tempo (CPU 1 fps, GPU 4 fps).
-The preset menus add named copies. Existing profiles can be edited or duplicated.
-Profiles > More contains rename, JSON import/export, delete and restore defaults.
-Collection changes are pending until Apply. Import asks before replacing a matching name.
+Profiles and saving
+Choose a profile under Editing profile on the Display tab. Use profile activates it.
+Built-in profiles are permanent: editing one offers Save as new profile, creating a
+personal copy with an available name. Save changes updates an existing personal
+profile. Revert profile discards profile edits and returns to the saved active profile.
+Switching away from modified settings asks Save, Discard or Cancel. No other drafts
+are kept or silently saved. A failed save leaves your input available to retry.
+During a file operation, editing is temporarily disabled and progress is shown.
+Hover over a function or press F1 for contextual help.
+
+Built-in Standard profiles: Classic (steady fill), Activity (speed follows usage),
+Thermal (speed follows temperature) and Sensor levels (bar height follows usage).
+Built-in Creative profiles: Random, Breathe (slow fill/empty), Counterflow
+(CPU fills while GPU empties) and Split tempo (CPU 1 fps, GPU 4 fps).
+Profiles lists these separately from My profiles. Select Edit to open one in the
+editor, or Duplicate to make a personal copy. New creates a personal profile.
+More contains rename, JSON import/export and delete. Built-ins cannot be renamed
+or deleted. These collection actions save immediately and preserve unrelated edits.
+Export writes the saved version, not an unsaved draft. Import keeps every existing
+profile and assigns an available name to the imported copy. Deletion asks for a
+confirmation; Cancel is the default. The previous collection remains in the backup.
+Older customized built-ins are preserved automatically as personal profiles when
+settings load. The original built-ins become available again.
 
 Daily operation
 Settings & About > Close to tray keeps the controller running when the window closes.
@@ -65,10 +81,14 @@ window responsive. If closing takes longer than five seconds, its status remains
 If Windows shutdown arrives during a file operation, the app postpones that request
 to finish the operation and then closes. Retry Windows shutdown afterwards. Idle
 Windows shutdown is allowed; forced termination cannot guarantee unfinished cleanup.
-Start with Windows is opt-in and starts the app in the tray. Apply saves this choice.
-If the app folder moves, disable and re-enable startup from its new location.
-Appearance offers Light, Dark or System. Theme previews immediately; Apply saves it.
-Revert restores the saved theme. Windows high contrast takes precedence. System follows
+App preferences have independent Save preferences and Revert preferences actions.
+They do not apply or discard profile edits. A profile validation error does not
+prevent saving preferences.
+Start with Windows is opt-in and starts the app in the tray. Settings shows whether
+registration points to this copy. If the folder moves, keep Start with Windows
+selected and Save preferences to repair the registration.
+Appearance offers Light, Dark or System. Theme previews immediately; Save preferences
+keeps it and Revert preferences restores the saved theme. Windows high contrast takes precedence. System follows
 the Windows app color preference; native file pickers retain Windows styling.
 
 Missing data and recovery
@@ -78,9 +98,12 @@ updates automatically, provided the display is enabled. Losing only an animation
 holds that bar while temperature numbers continue updating.
 Last reading marks cached values when AIDA64 is unavailable. A stationary reading does
 not prove a sensor is stale: AIDA64 supplies no production timestamp in this export.
-Use Device & setup > Reconnect to retry immediately. If the port is busy, close its other
+The AIDA64 and Display status buttons open Connection with current status and
+recovery actions. Use Connection > Reconnect to retry immediately. If the port is busy, close its other
 owner. If more than one matching holder is detected, disconnect the others.
-Updates resume automatically when only one remains. Diagnostics shows the detected display.
+Updates resume automatically when only one remains. If the controller has stopped,
+Reconnect is disabled: Exit and reopen the app to restart it. Diagnostics shows the
+detected display.
 Diagnostics > Events shows the latest 200 events from the current app session.
 Select text and press Ctrl+C to copy it. Last received is the app's receipt time,
 not a sensor timestamp. Log-file failures remain visible even if the file cannot
@@ -92,7 +115,7 @@ settings.previous.json and up to two 1 MB log files. Invalid settings files are 
 during recovery. Diagnostics exports selected IDs, the active profile, status, counters
 and recent events; it does not include AIDA64's INI/license or the entire sensor catalog.
 The app does not transmit data over the network. Inspect reports before sharing them.
-To remove the app: disable Start with Windows, Apply, Exit, then remove the extracted
+To remove the app: disable Start with Windows, Save preferences, Exit, then remove the extracted
 folder. Local settings can be retained for later use.
 
 Version

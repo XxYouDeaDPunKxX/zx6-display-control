@@ -14,7 +14,8 @@ keep the display running from the Windows tray.
 - **Bar animations:** fill, empty, bounce or random, with fixed speed or speed
   that follows a sensor reading.
 - **Bar levels:** show a sensor value as a level, or hold a fixed level.
-- **Profiles:** use the included presets, create your own and import or export them.
+- **Profiles:** start from protected built-in presets, save personal copies and import or export them.
+- **Display preview:** see both temperature readouts and animated levels together, with pending edits clearly marked.
 - **Daily operation:** turn the display on or off, use tray controls, choose
   light, dark or system appearance, and optionally start with Windows.
 
@@ -31,7 +32,7 @@ You need:
 - Windows with .NET Framework 4.7.2 or later.
 - AIDA64 installed and running, with shared memory enabled.
 
-This beta supports **one Z-X6 at a time**. If multiple matching displays are
+The app supports **one Z-X6 at a time**. If multiple matching displays are
 detected, updates stop until only one remains.
 
 The app controls the two temperature readouts and their bars. It has no controls
@@ -49,7 +50,8 @@ models and firmware variants have not been verified.
 3. Disable **LCD > Turing** in AIDA64 and close the original GPU LCD software
    so this app can use the holder's serial port.
 4. Run `ZX6DisplayControl.exe`, choose a profile or configure each side, then
-   select **Apply**. Administrator rights are not required.
+   select **Use profile**. Editing a built-in profile changes the action to
+   **Save as new profile**. Administrator rights are not required.
 
 The default temperature sources are `TCPU` and `TGPU1`. If they are unavailable,
 choose the appropriate exported sensors in the app. For animations that follow
@@ -60,11 +62,13 @@ profiles and tray behavior. Hover over a control or press **F1** for help in the
 
 ## 📸 Screenshots
 
-**CPU controls:** temperature selection and a bar driven by CPU usage.
+Current source interface, shown with sample readings. The published beta may differ.
 
-![CPU controls with temperature and usage sensor selection](docs/screenshots/cpu-settings.png)
+**Display:** both readouts and animations beside the CPU/GPU controls.
 
-**Profiles:** saved configurations with separate CPU and GPU settings.
+![Display preview beside temperature and animation controls](docs/screenshots/cpu-settings.png)
+
+**Profiles:** protected built-ins and personal configurations with separate CPU/GPU settings.
 
 ![Profile collection and preset controls](docs/screenshots/profiles.png)
 
@@ -160,7 +164,7 @@ every device with vendor/product IDs `1A86:5722`. The interface is identified
 as Turing / UsbMonitor; matching identifiers on another product or firmware
 do not establish compatibility.
 
-This beta connects only when discovery returns exactly one matching holder.
+The app connects only when discovery returns exactly one matching holder.
 If more than one is detected, the connection is closed and updates stop until
 only one remains. Diagnostics shows the detected display and its COM port;
 there is no device-selection control.
@@ -312,9 +316,13 @@ take their candidate level directly. This prevents repeated level changes
 when a sensor hovers around a boundary.
 
 **Pause animation** holds only the bar; temperatures keep updating.
-Changing animation settings resets that engine. The UI preview has its own
-engines and uses the current editor draft, so it can show pending changes
-before those changes are applied to the holder.
+Changing animation settings resets that engine. With no pending profile edits,
+the display preview uses the worker’s published temperatures and frames. It
+represents commands sent to the holder, not physical readback: the protocol
+provides no screen-state acknowledgement. A pending draft uses separate preview
+engines and is labelled **Preview · not applied**. Off, disconnected or stopped
+states clear the readouts. The CPU/GPU controls retain ranges and timing when
+changing modes; choosing an animation preset explicitly replaces those values.
 
 ### 🗂️ Profiles, drafts and persistence
 
@@ -323,19 +331,34 @@ before those changes are applied to the holder.
 `Animation` and `Paused`. App settings contain the profile collection, active
 profile name, display power, startup/tray choices and appearance.
 
-The editor keeps saved settings and a working copy. Selecting or editing
-a profile changes the draft. **Apply** validates it, saves settings and queues
-the new session configuration; **Revert** restores the saved copy.
-Collection changes such as adding, renaming, deleting, importing or restoring
-profiles also remain pending until Apply. Display power is saved and applied
-as a separate action, without applying unrelated draft edits.
+The editor holds one selected draft. **Use profile** activates an unchanged
+selection; **Save changes** saves and activates a personal profile. Editing a
+built-in offers **Save as new profile**, using an available personal name.
+Switching away from a modified draft asks Save, Discard or Cancel. No hidden
+collection of drafts is saved later. **Revert profile** returns to the saved
+active profile without discarding app preferences. Returning a value to its
+original setting clears its pending state.
 
-Profile names must be non-empty and unique without regard to case. At least
-one profile must remain. JSON import/export uses a `ProfileDocument` containing
-`SchemaVersion: 1` and `Profile`. Invalid fields or unsupported schema versions
-are rejected, and replacing an existing name requires a choice in the UI.
+The eight built-ins have stable `BuiltInId` values. Settings validation rejects
+renaming, deleting or modifying them. Library version `2` restores the canonical
+presets while migrating older libraries: previously modified built-ins become
+uniquely named personal copies, and an active customization remains active.
 
-The editable preset library starts with:
+Creating, duplicating, renaming, importing or deleting a profile saves that
+collection action immediately; it never saves unrelated editor changes.
+Deletion requires a named confirmation, with Cancel as the default. There is no
+global reset of personal profiles. Export writes the selected saved profile.
+Imported profiles become personal copies, with a unique name when one already
+exists. Profile names must be non-empty and unique without regard to case.
+JSON import/export uses `ProfileDocument` with `SchemaVersion: 1` and `Profile`.
+Invalid fields and unsupported schema versions are rejected.
+
+App preferences have separate **Save preferences** and **Revert preferences**
+actions and can be saved even when a profile draft is invalid. Display power is
+also saved and applied independently. These operations use the saved profile
+configuration, leaving the current editor draft intact.
+
+The protected preset library contains:
 
 | Preset | Default behavior |
 | --- | --- |
@@ -376,12 +399,13 @@ disposes the serial port; cleanup failures are reported.
 
 Start with Windows is opt-in. It writes this executable's full path and
 `--tray` to the current user's `Software\Microsoft\Windows\CurrentVersion\Run`
-key, without requiring administrator rights. If the app is moved, disable
-and re-enable startup from its new location. When saving startup preferences,
+key, without requiring administrator rights. Settings shows whether registration
+points to the current executable. After moving the app, **Save preferences**
+repairs registration when Start with Windows is selected. When saving preferences,
 the previous registry value is restored if settings persistence fails.
 
-Light, Dark and System appearance preview immediately; Apply saves the choice
-and Revert restores it. System follows the Windows app color preference,
+Light, Dark and System appearance preview immediately; **Save preferences** keeps
+the choice and **Revert preferences** restores it. System follows the Windows app color preference,
 checked every three seconds, while high contrast takes precedence.
 Native file pickers keep Windows styling. The interface uses DPI scaling
 and F1/hover help for its controls.
@@ -389,7 +413,7 @@ and F1/hover help for its controls.
 ### 🩺 Diagnostics and local data
 
 The app makes no network requests. Diagnostics exposes the exported sensor
-catalog, selected device, connection states, receipt time and counters:
+catalog, detected display, connection states, receipt time and counters:
 
 - **Valid reads:** successfully parsed sensor snapshots, even if a selected
   display-temperature value is subsequently rejected.
