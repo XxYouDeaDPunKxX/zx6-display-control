@@ -54,8 +54,8 @@ namespace ZX6DisplayControl {
   private bool dirty {get{return ContentChanged || PreferencesPending;}}
   public event Action BringToFrontRequested;
 
-  public MainForm(AppSettings settings,SettingsStore store,ISessionController controller,EventLog log,StartupRegistration startup,string exePath) {
-   saved=settings.Copy();editing=saved.ActiveProfile.Copy();this.store=store;this.controller=controller;this.log=log;this.startup=startup;this.exePath=exePath;
+  public MainForm(AppSettings settings,SettingsStore store,ISessionController controller,EventLog log,StartupRegistration startup,string exePath,UpdateService updateService=null) {
+   saved=settings.Copy();editing=saved.ActiveProfile.Copy();this.store=store;this.controller=controller;this.log=log;this.startup=startup;this.exePath=exePath;updates=updateService;
    Text="Z-X6 Display Control";Font=new Font("Segoe UI",10);AutoScaleMode=AutoScaleMode.Dpi;AutoScaleDimensions=new SizeF(96,96);
    MinimumSize=new Size(900,700);Size=new Size(1180,840);StartPosition=FormStartPosition.CenterScreen;
    var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=5,Padding=new Padding(18)};
@@ -68,7 +68,9 @@ namespace ZX6DisplayControl {
    header.Controls.Add(new Label{Text="Z-X6 Display Control",AutoSize=true,Font=new Font("Segoe UI",18,FontStyle.Bold),Margin=new Padding(0,4,15,0)},0,0);
    aidaStatus.AutoSize=holderStatus.AutoSize=false;aidaStatus.Size=holderStatus.Size=new Size(205,44);
    var statuses=new FlowLayoutPanel{AutoSize=true,WrapContents=false};statuses.Controls.Add(aidaStatus);statuses.Controls.Add(holderStatus);header.Controls.Add(statuses,1,0);root.Controls.Add(header,0,0);
-   root.Controls.Add(notice,0,1);root.Controls.Add(profileStatus,0,2);
+   var notices=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=2,Margin=Padding.Empty};
+   notices.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));notices.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+   notices.Controls.Add(notice,0,0);notices.Controls.Add(updateNotice,1,0);root.Controls.Add(notices,0,1);root.Controls.Add(profileStatus,0,2);
    var display=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=2,RowCount=1,Padding=new Padding(12)};
    display.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,39));display.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,61));display.RowStyles.Add(new RowStyle(SizeType.Percent,100));
    var left=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=3,Padding=new Padding(6,6,18,6)};
@@ -93,10 +95,10 @@ namespace ZX6DisplayControl {
    profiles.Requested+=action=>AttemptAsync(()=>RunOperation("Profile: "+action,()=>ProfileAction(action)));
    diagnostics.RetryRequested+=RetryConnection;diagnostics.ExportRequested+=()=>AttemptAsync(()=>RunOperation("Export diagnostics",ExportDiagnostics));deviceSetup.RetryRequested+=RetryConnection;
    deviceSetup.EditSensorsRequested+=()=>{tabs.SelectedIndex=0;channels.SelectedIndex=0;cpu.Focus();};deviceSetup.ExitRequested+=ExitApp;
-   foreach(var box in new[]{startupBox,minimizeBox,closeBox})box.CheckedChanged+=(s,e)=>{if(!updating)Changed();};
+   foreach(var box in new[]{startupBox,minimizeBox,closeBox,updateStartupBox})box.CheckedChanged+=(s,e)=>{if(!updating)Changed();};
    themeChoice.SelectedIndexChanged+=(s,e)=>{if(!updating){ApplyTheme();Changed();}};
    savePreferences.Click+=(s,e)=>AttemptAsync(SavePreferences);revertPreferences.Click+=(s,e)=>RevertPreferences();
-   Shown+=(s,e)=>{ApplyTheme();controller.Start();timer.Start();AttemptAsync(RefreshStartup);};
+   Shown+=(s,e)=>{ApplyTheme();controller.Start();timer.Start();AttemptAsync(RefreshStartup);if(saved.CheckUpdatesOnStartup)AttemptAsync(()=>CheckForUpdates(true));};
    Resize+=(s,e)=>{if(WindowState==FormWindowState.Minimized && saved.MinimizeToTray)Hide();};
    contextHelp=new UiHelp(this);timer.Tick+=(s,e)=>RefreshFromState();FormClosing+=OnFormClosing;
    LoadPreferences();LoadEditor();
@@ -107,12 +109,14 @@ namespace ZX6DisplayControl {
    InfoPage.Heading(table,"Appearance");themeChoice.Items.AddRange(new object[]{"System","Light","Dark"});InfoPage.Add(table,themeChoice);
    InfoPage.Heading(table,"Startup & window");InfoPage.Add(table,startupBox);InfoPage.Add(table,startupStatus);InfoPage.Add(table,minimizeBox);InfoPage.Add(table,closeBox);
    InfoPage.Paragraph(table,"The controller keeps running in the tray. Double-click its icon to reopen this window; Exit stops it and releases the USB port.");
+   InfoPage.Add(table,updateStartupBox);
    var prefs=new FlowLayoutPanel{AutoSize=true,Dock=DockStyle.Fill};prefs.Controls.Add(revertPreferences);prefs.Controls.Add(savePreferences);InfoPage.Add(table,prefs);InfoPage.Add(table,preferenceStatus);
+   BuildUpdateSection(table);
    InfoPage.Heading(table,"Local data");InfoPage.Paragraph(table,"Settings, backups and logs are stored in your Windows user profile.");
    var actions=new FlowLayoutPanel{AutoSize=true,Dock=DockStyle.Fill};var folder=ActionButton("","Open data folder","Open settings, backups and logs.");
    folder.Click+=(s,e)=>AttemptAsync(()=>RunOperation("Open data folder",()=>Task.Run(()=>{Directory.CreateDirectory(store.DirectoryPath);Process.Start(new ProcessStartInfo(store.DirectoryPath){UseShellExecute=true});})));
    var export=ActionButton("","Export diagnostics…","Save connection details, sensor IDs and recent events to a file.");export.Click+=(s,e)=>AttemptAsync(()=>RunOperation("Export diagnostics",ExportDiagnostics));actions.Controls.Add(folder);actions.Controls.Add(export);InfoPage.Add(table,actions);
-   InfoPage.Heading(table,"About");InfoPage.Paragraph(table,"Z-X6 Display Control · 0.1.0-beta.1\nControls the Z-X6 display using sensor readings from AIDA64.");
+   InfoPage.Heading(table,"About");InfoPage.Paragraph(table,"Z-X6 Display Control · "+UpdateService.CurrentVersion+"\nControls the Z-X6 display using sensor readings from AIDA64.");
    var exit=ActionButton("","Exit","Stop the controller and close the app.");exit.Click+=(s,e)=>ExitApp();InfoPage.Add(table,exit);return page;
   }
   private void ApplyTheme() {UiTheme.Apply(this,(AppTheme)Math.Max(0,themeChoice.SelectedIndex));UiTheme.Menu(tray.ContextMenuStrip);notice.ForeColor=UiTheme.Error;}

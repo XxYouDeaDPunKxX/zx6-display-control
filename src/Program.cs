@@ -17,7 +17,7 @@ namespace ZX6DisplayControl {
      var store=new SettingsStore(directory);var loaded=store.Load();var settings=loaded.Settings;
      var initial=new SessionConfiguration{Cpu=settings.ActiveProfile.Cpu.Copy(),Gpu=settings.ActiveProfile.Gpu.Copy(),DisplayEnabled=settings.DisplayEnabled};
      using(var controller=new SessionController(()=>new HolderSession(new SharedMemoryReader(),new DeviceDiscovery(),new SerialTransport(),new MonotonicClock(),s=>log.Write("session",s)),initial,(message,error)=>log.Write("controller failure",message,error)))
-     using(var form=new MainForm(settings,store,controller,log,new StartupRegistration(),Application.ExecutablePath)) {
+     using(var form=new MainForm(settings,store,controller,log,new StartupRegistration(),Application.ExecutablePath,new UpdateService(directory))) {
       PowerModeChangedEventHandler power=(s,e)=>{if(e.Mode==PowerModes.Suspend)controller.Suspend();else if(e.Mode==PowerModes.Resume)controller.Resume();};
       SystemEvents.PowerModeChanged+=power;
       form.BringToFrontRequested+=()=>{if(instance.ConsumeOpenRequest())form.ShowWindow();};

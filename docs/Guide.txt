@@ -98,6 +98,23 @@ the Windows app color preference; native file pickers retain Windows styling.
 The app scales to the system DPI at startup. It may look blurred when moved to a
 monitor using a different scale; per-monitor DPI changes are not supported.
 
+App updates
+The app checks GitHub at startup, at most once every 24 hours, including published
+beta releases. When a newer app version is available, the window shows a link.
+Settings & About > Check for updates checks immediately, even after a failed check.
+To turn off automatic checks, clear Check for updates at startup and Save preferences.
+This does not disable manual checks or change your profile edits.
+Open release opens the new version's GitHub page in your browser. Download the
+portable ZIP, Exit the running app, extract the entire new package, then launch
+its EXE. Keep the EXE and Core DLL together. Profiles and preferences remain in
+your Windows user data folder. If the app folder changes and Start with Windows
+is enabled, Save preferences from the new copy to update registration.
+No GitHub account is needed. The app does not download or install updates itself.
+If GitHub is unavailable, display control keeps running. The check has a 15-second
+HTTP timeout; Exit cancels it without waiting. Automatic attempts, including failed
+ones, use the separate update-check.json cache and do not rotate profile backups.
+Deleting that cache allows a new automatic check at the next startup.
+
 Missing data and recovery
 Turning the display off preserves that choice across reconnects and suspend/resume.
 Missing temperature data for over five seconds requests display off. Valid data resumes
@@ -120,10 +137,12 @@ be written. Export diagnostics includes this event history and the available log
 
 Local data and removal
 Settings & About can open %LOCALAPPDATA%\ZX6DisplayControl. It contains settings.json,
-settings.previous.json and up to two 1 MB log files. Invalid settings files are retained
+settings.previous.json, update-check.json and up to two 1 MB log files. Invalid settings files are retained
 during recovery. Diagnostics exports selected IDs, the active profile, status, counters
 and recent events; it does not include AIDA64's INI/license or the entire sensor catalog.
-The app does not transmit data over the network. Inspect reports before sharing them:
+Release checks contact GitHub over HTTPS with the app name and version. GitHub
+receives normal connection information, including the IP address. The app does not
+upload sensor readings, profiles, diagnostics or logs. Inspect reports before sharing them:
 profile names, paths and exception details may contain your Windows user name or
 other personal information.
 To remove the app: disable Start with Windows, Save preferences, Exit, then remove the extracted

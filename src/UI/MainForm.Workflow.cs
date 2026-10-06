@@ -14,7 +14,7 @@ namespace ZX6DisplayControl {
    get {if(editing==null)return false;try{return !editing.SameContent(ReadDraft());}catch(InvalidOperationException){return true;}}
   }
   private bool ProfilePending {get{return editing!=null && (ContentChanged || editing.Name!=saved.ActiveProfileName);}}
-  private bool PreferencesPending {get{return startupBox.Checked!=saved.StartWithWindows || closeBox.Checked!=saved.CloseToTray || minimizeBox.Checked!=saved.MinimizeToTray || Math.Max(0,themeChoice.SelectedIndex)!=(int)saved.Theme;}}
+  private bool PreferencesPending {get{return startupBox.Checked!=saved.StartWithWindows || closeBox.Checked!=saved.CloseToTray || minimizeBox.Checked!=saved.MinimizeToTray || updateStartupBox.Checked!=saved.CheckUpdatesOnStartup || Math.Max(0,themeChoice.SelectedIndex)!=(int)saved.Theme;}}
   public Task ApplyChanges() {return RunOperation("Save profile",ApplyCore);}
   private async Task ApplyCore() {
    var value=ReadDraft();var snapshot=saved.Copy();
@@ -58,12 +58,12 @@ namespace ZX6DisplayControl {
    }finally{updating=true;profileChoice.SelectedItem=editing.Name;updating=false;}
   }
   private void LoadPreferences() {
-   updating=true;try {startupBox.Checked=saved.StartWithWindows;closeBox.Checked=saved.CloseToTray;minimizeBox.Checked=saved.MinimizeToTray;themeChoice.SelectedIndex=(int)saved.Theme;}finally{updating=false;}ApplyTheme();
+   updating=true;try {startupBox.Checked=saved.StartWithWindows;closeBox.Checked=saved.CloseToTray;minimizeBox.Checked=saved.MinimizeToTray;updateStartupBox.Checked=saved.CheckUpdatesOnStartup;themeChoice.SelectedIndex=(int)saved.Theme;}finally{updating=false;}ApplyTheme();
   }
   public void RevertPreferences() {LoadPreferences();preferenceStatus.Text="Preferences reverted.";RefreshFromState();}
   public Task SavePreferences() {return RunOperation("Save preferences",SavePreferencesCore);}
   private async Task SavePreferencesCore() {
-   var snapshot=saved.Copy();snapshot.StartWithWindows=startupBox.Checked;snapshot.CloseToTray=closeBox.Checked;snapshot.MinimizeToTray=minimizeBox.Checked;snapshot.Theme=(AppTheme)Math.Max(0,themeChoice.SelectedIndex);
+   var snapshot=saved.Copy();snapshot.StartWithWindows=startupBox.Checked;snapshot.CloseToTray=closeBox.Checked;snapshot.MinimizeToTray=minimizeBox.Checked;snapshot.CheckUpdatesOnStartup=updateStartupBox.Checked;snapshot.Theme=(AppTheme)Math.Max(0,themeChoice.SelectedIndex);
    await Task.Run(()=>startup.CommitEnabled(snapshot.StartWithWindows,exePath,()=>store.Save(snapshot)));
    if(IsDisposed || Disposing)return;saved=snapshot;preferenceStatus.Text="Preferences saved.";lastSaveFeedback="Preferences saved. Profile edits are unchanged.";await RefreshStartup();
   }
@@ -95,6 +95,7 @@ namespace ZX6DisplayControl {
   private void SetEditingEnabled(bool enabled) {
    if(enabled)tabs.Enabled=true;
    cpu.Enabled=gpu.Enabled=profiles.Enabled=deviceSetup.Enabled=settingsPage.Enabled=profileChoice.Enabled=power.Enabled=trayPower.Enabled=enabled;
+   checkUpdates.Enabled=enabled && updates!=null && !checkingUpdates;
    diagnostics.SetActionsEnabled(enabled);apply.Enabled=enabled && ProfilePending && CanApply;cancel.Enabled=enabled && ProfilePending;
   }
   private async Task ProfileAction(string action) {

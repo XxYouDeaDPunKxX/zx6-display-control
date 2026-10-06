@@ -17,7 +17,7 @@ namespace ZX6DisplayControl {
    if(!Visible)ShowWindow();
    DialogResult decision=DialogResult.No;bool askAfterOperation=busy;
    if(!busy && dirty){decision=ask();if(decision!=DialogResult.Yes && decision!=DialogResult.No)return false;}
-   closing=true;shutdownStatus=busy?"Finishing the current operation…":"Stopping controller…";RefreshFromState();FinishExit(ask,decision,askAfterOperation);return true;
+   closing=true;CancelUpdateCheck();shutdownStatus=busy?"Finishing the current operation…":"Stopping controller…";RefreshFromState();FinishExit(ask,decision,askAfterOperation);return true;
   }
   private async void FinishExit(Func<DialogResult> ask,DialogResult decision,bool askAfterOperation) {
    try {
@@ -50,6 +50,6 @@ namespace ZX6DisplayControl {
    if(!saved.CloseToTrayExplained && !busy){tray.ShowBalloonTip(5000,"Z-X6 Display Control is still running","Open the tray icon to return, or choose Exit to stop the controller.",ToolTipIcon.Info);AttemptAsync(()=>RunOperation("Remember tray preference",async()=>{var snapshot=saved.Copy();snapshot.CloseToTrayExplained=true;await Task.Run(()=>store.Save(snapshot));if(IsDisposed || Disposing)return;saved=snapshot;}));}
    Hide();
   }
-  protected override void Dispose(bool disposing) {if(disposing){if(!closing)controller.Stop();closing=true;timer.Stop();timer.Dispose();if(contextHelp!=null)contextHelp.Dispose();tray.Visible=false;var menu=tray.ContextMenuStrip;tray.Dispose();if(menu!=null)menu.Dispose();if(Icon!=null)Icon.Dispose();}base.Dispose(disposing);}
+  protected override void Dispose(bool disposing) {if(disposing){CancelUpdateCheck();if(!closing)controller.Stop();closing=true;timer.Stop();timer.Dispose();if(contextHelp!=null)contextHelp.Dispose();tray.Visible=false;var menu=tray.ContextMenuStrip;tray.Dispose();if(menu!=null)menu.Dispose();if(Icon!=null)Icon.Dispose();}base.Dispose(disposing);}
  }
 }

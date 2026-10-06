@@ -37,14 +37,15 @@ namespace ZX6DisplayControl {
   [DataMember] public bool CloseToTrayExplained {get;set;}
   [DataMember] public bool CloseToTray {get;set;}
   [DataMember] public bool MinimizeToTray {get;set;}
+  [DataMember] public bool CheckUpdatesOnStartup {get;set;}
   [DataMember] public AppTheme Theme {get;set;}
   [DataMember] public int PresetLibraryVersion {get;set;}
-  [OnDeserializing] private void ReadDefaults(StreamingContext context) {CloseToTray=true;}
+  [OnDeserializing] private void ReadDefaults(StreamingContext context) {CloseToTray=true;CheckUpdatesOnStartup=true;}
   public static AppSettings Defaults() {
-   return new AppSettings{SchemaVersion=1,Profiles=ProfileLibrary.Create(),ActiveProfileName="Classic",DisplayEnabled=true,CloseToTray=true,PresetLibraryVersion=2};
+   return new AppSettings{SchemaVersion=1,Profiles=ProfileLibrary.Create(),ActiveProfileName="Classic",DisplayEnabled=true,CloseToTray=true,CheckUpdatesOnStartup=true,PresetLibraryVersion=2};
   }
   public Profile ActiveProfile {get{return Profiles.Single(p=>string.Equals(p.Name,ActiveProfileName,StringComparison.OrdinalIgnoreCase));}}
-  public AppSettings Copy() {return new AppSettings{SchemaVersion=SchemaVersion,Profiles=Profiles.Select(p=>p.Copy()).ToList(),ActiveProfileName=ActiveProfileName,SelectedInstanceId=SelectedInstanceId,DisplayEnabled=DisplayEnabled,StartWithWindows=StartWithWindows,CloseToTrayExplained=CloseToTrayExplained,CloseToTray=CloseToTray,MinimizeToTray=MinimizeToTray,Theme=Theme,PresetLibraryVersion=PresetLibraryVersion};}
+  public AppSettings Copy() {return new AppSettings{SchemaVersion=SchemaVersion,Profiles=Profiles.Select(p=>p.Copy()).ToList(),ActiveProfileName=ActiveProfileName,SelectedInstanceId=SelectedInstanceId,DisplayEnabled=DisplayEnabled,StartWithWindows=StartWithWindows,CloseToTrayExplained=CloseToTrayExplained,CloseToTray=CloseToTray,MinimizeToTray=MinimizeToTray,CheckUpdatesOnStartup=CheckUpdatesOnStartup,Theme=Theme,PresetLibraryVersion=PresetLibraryVersion};}
   public void Validate() {
    if(!Enum.IsDefined(typeof(AppTheme),Theme))throw new InvalidDataException("Invalid appearance setting.");
    if(SchemaVersion!=1 || Profiles==null || Profiles.Count==0 || Profiles.Any(p=>p==null || p.Validate().Count>0) || Profiles.Select(p=>p.Name).Distinct(StringComparer.OrdinalIgnoreCase).Count()!=Profiles.Count || Profiles.Count(p=>string.Equals(p.Name,ActiveProfileName,StringComparison.OrdinalIgnoreCase))!=1) throw new InvalidDataException("Invalid settings or unsupported settings version.");

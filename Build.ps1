@@ -7,7 +7,7 @@ $stage=Join-Path $PSScriptRoot ('obj\'+[guid]::NewGuid().ToString('N'))
 $bin=[IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $stage,$bin -Force | Out-Null
 $common=@('/nologo','/noconfig','/nostdlib+','/warnaserror+','/optimize+','/codepage:65001','/langversion:5')
-foreach($assembly in @('mscorlib','System','System.Core','System.Xml','System.Xml.Linq','System.Runtime.Serialization','System.Management','System.Windows.Forms','System.Drawing','System.IO.Compression','System.IO.Compression.FileSystem')){$common+=('/reference:'+(Join-Path $refs ($assembly+'.dll')))}
+foreach($assembly in @('mscorlib','System','System.Core','System.Xml','System.Xml.Linq','System.Runtime.Serialization','System.Management','System.Windows.Forms','System.Drawing','System.IO.Compression','System.IO.Compression.FileSystem','System.Net.Http')){$common+=('/reference:'+(Join-Path $refs ($assembly+'.dll')))}
 $sources=@(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'src') -Filter '*.cs' -Recurse | Where-Object Name -ne 'Program.cs' | ForEach-Object FullName)
 & $compiler @common '/target:library' ('/resource:'+(Join-Path $PSScriptRoot 'src\Assets\holder.ico')+',ZX6DisplayControl.holder.ico') ('/out:'+(Join-Path $stage 'ZX6DisplayControl.Core.dll')) @sources
 if($LASTEXITCODE -ne 0){throw 'Core build failed.'}

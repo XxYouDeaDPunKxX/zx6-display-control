@@ -60,6 +60,19 @@ usage, export CPU Utilization (`SCPUUTI`) and GPU Utilization (`SGPU1UTI`) in AI
 See the [user guide](docs/Guide.txt) for sensor selection, animation settings,
 profiles and tray behavior. Hover over a control or press **F1** for help in the app.
 
+### 🔄 Updating the app
+
+The current source checks GitHub at startup, at most once every 24 hours, and
+shows a link when a newer version is available. Published betas are included.
+**Settings & About > Check for updates** checks immediately. To disable automatic
+checks, clear **Check for updates at startup** and select **Save preferences**.
+
+**Open release** opens GitHub in your browser. Download the portable ZIP, choose
+**Exit** in the running app, then extract the new package and run its EXE. Keep
+the EXE and Core DLL together. Profiles remain in your Windows user data folder.
+If the app's folder changes, save preferences again to repair Windows startup
+registration when enabled. The app never downloads or installs an update itself.
+
 ## 📸 Screenshots
 
 Current source interface, shown with sample readings. The published beta may differ.
@@ -418,9 +431,40 @@ Native file pickers keep Windows styling. The interface scales to the system DPI
 at startup and provides F1/hover help. Moving between monitors with different
 scaling may blur the window; per-monitor DPI changes are not supported.
 
+### 🔄 GitHub release checks
+
+[UpdateService.cs](src/Updates/UpdateService.cs) reads this repository's public
+GitHub Releases API over HTTPS. No account, token or dedicated update server is
+required. It examines up to 100 recent releases, ignores drafts and entries
+without an uploaded `ZX6DisplayControl.zip`, and compares version tags numerically
+using semantic-version precedence, including prereleases (`beta.10` follows
+`beta.2`). The installed version comes from the assembly metadata.
+
+The request runs asynchronously after the window is shown, independently of
+the display worker. It has a 15-second HTTP timeout and a 1 MiB response limit.
+Offline, rate-limit and malformed-response failures appear in Settings & About;
+they do not stop the display or claim that the installed version is current.
+Exit cancels the request without waiting for it.
+
+Automatic checks are enabled by default, including when loading older settings.
+`CheckUpdatesOnStartup` is saved with app preferences. A separate
+`%LOCALAPPDATA%\ZX6DisplayControl\update-check.json` stores the attempt time and
+last successful release tag. Attempts, including failures, are limited to one
+per 24 hours across launches; during that period the cached result is reused.
+Manual checks bypass that interval. If the attempt time cannot be saved,
+automatic network access is skipped and manual checking remains available.
+These checks do not save profiles or rotate their backups.
+
+Release links are constructed for this repository from validated version tags.
+The app sends its name/version in the HTTP User-Agent; GitHub also receives the
+normal connection information, including the IP address. No sensor readings,
+profiles, diagnostics or logs are uploaded. The browser opens only when the user
+selects **Open release** or the update notice.
+
 ### 🩺 Diagnostics and local data
 
-The app makes no network requests. Diagnostics exposes the exported sensor
+The only app network request is the GitHub release check described above.
+Display control works locally. Diagnostics exposes the exported sensor
 catalog, detected display, connection states, receipt time and counters:
 
 - **Valid reads:** successfully parsed sensor snapshots, even if a selected

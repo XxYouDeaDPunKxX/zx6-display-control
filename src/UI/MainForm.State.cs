@@ -9,6 +9,7 @@ namespace ZX6DisplayControl {
    diagnostics.UpdateLog(log,closing?shutdownStatus:operationName);
    if(closing){notice.Text=shutdownStatus;notice.Visible=true;apply.Enabled=cancel.Enabled=power.Enabled=profileChoice.Enabled=tabs.Enabled=trayPower.Enabled=false;return;}
    bool open=HasOpenDropDown(this);
+   if(!open)RefreshUpdateNotice();
    if(!open && DateTime.UtcNow>=nextThemeCheck) {
     nextThemeCheck=DateTime.UtcNow.AddSeconds(3);bool dark=UiTheme.SystemIsDark(),contrast=SystemInformation.HighContrast;
     if(lastHighContrast!=contrast || (themeChoice.SelectedIndex==0 && lastSystemDark!=dark)){lastSystemDark=dark;lastHighContrast=contrast;ApplyTheme();}
