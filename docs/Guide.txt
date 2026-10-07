@@ -1,9 +1,6 @@
 Z-X6 DISPLAY CONTROL — 0.1.0-beta.5
 
-The app interface and system-error summaries use English. Number and date formats
-follow your Windows regional settings. Windows file pickers may retain the Windows
-language when English resources are unavailable. Sensor names, personal profile
-names and original error details in exported logs are preserved.
+The interface uses English and follows your regional number and date formats.
 
 Get started
 Extract the entire folder, keeping ZX6DisplayControl.Core.dll beside ZX6DisplayControl.exe. Run the EXE.
@@ -31,11 +28,10 @@ bar sources; use Advanced settings for other units.
 The optional Test bars uses the active profile and real temperatures. CPU is empty
 and GPU full for five seconds, then they swap. After ten seconds, Stop display check,
 leaving Connection, a connection error or another action restores the active profile.
-The test does not save settings or create a test profile.
 
 Configure each side
-Temperature chooses the number shown on that side of the holder. Animation has its
-own control sensor; changing it does not change the temperature number.
+Temperature number chooses the reading shown on that side of the holder. Bar behavior
+has its own control sensor; changing it does not change the temperature number.
 Pick sensors by name, measurement type and unit. Relevant CPU/GPU readings appear
 first; selection always remains yours. The selected ID appears below the list and
 also distinguishes duplicate names. Search by name or ID is optional.
@@ -82,8 +78,8 @@ Choose a profile under Editing profile on the Display tab. Use profile activates
 Built-in profiles are permanent: editing one offers Save as new profile, creating a
 personal copy with an available name. Save changes updates an existing personal
 profile. Revert profile discards profile edits and returns to the saved active profile.
-Switching away from modified settings asks Save, Discard or Cancel. No other drafts
-are kept or silently saved. A failed save leaves your input available to retry.
+Switching away from modified settings asks Save, Discard or Cancel. A failed save
+leaves your input available to retry.
 During a file operation, editing is temporarily disabled and progress is shown.
 Hover over a function or press F1 for contextual help.
 
@@ -131,7 +127,8 @@ It can block startup because Windows cannot launch
 that copy without elevation. The app does not require administrator rights.
 Appearance offers Light, Dark or System. Theme previews immediately; Save preferences
 keeps it and Revert preferences restores the saved theme. Windows high contrast takes precedence. System follows
-the Windows app color preference; native file pickers retain Windows styling.
+the Windows app color preference. Native file pickers use Windows styling and may
+use the Windows language. Sensor names and personal profile names are kept as entered.
 The app scales to the system DPI at startup. It may look blurred when moved to a
 monitor using a different scale; per-monitor DPI changes are not supported.
 
@@ -147,10 +144,8 @@ its EXE. Keep the EXE and Core DLL together. Profiles and preferences remain in
 your Windows user data folder. If the app folder changes and Start with Windows
 is enabled, Save preferences from the new copy to update registration.
 No GitHub account is needed. The app does not download or install updates itself.
-If GitHub is unavailable, display control keeps running. The check has a 15-second
-HTTP timeout; Exit cancels it without waiting. Automatic attempts, including failed
-ones, use the separate update-check.json cache and do not rotate profile backups.
-Deleting that cache allows a new automatic check at the next startup.
+If GitHub is unavailable, display control keeps running. Use Check for updates
+to try again; automatic checks are limited to one attempt per day.
 
 Missing data and recovery
 Turning the display off preserves that choice across reconnects and suspend/resume.

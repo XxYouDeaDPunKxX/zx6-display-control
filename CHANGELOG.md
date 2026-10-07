@@ -1,36 +1,44 @@
 # Changelog
 
-## 0.1.0-beta.5 — Unreleased
+## 0.1.0-beta.5 — 2026-10-07
 
-- Use English UI resources throughout the app without changing regional number
-  input or date formats.
-- Present Windows errors in English with their error codes, including on systems
-  without English message resources. Keep original exceptions in diagnostic logs.
-- Request English from native Windows components within this app; file pickers
-  can still fall back to the language installed in Windows.
+### Added
 
-## 0.1.0-beta.4 — Unreleased
+- Playlists: repeat ordered bar effects with separate durations and speeds for CPU and GPU.
+- Bar response: see the sensor reading, resulting segments or speed, smoothing,
+  input range and any hold near a level boundary. Unapplied drafts are labelled separately.
+- Profile previews and direct activation from Profiles or the tray.
+- Guided sensor setup and a ten-second bar check that restores the active profile.
+- Copy animation between CPU and GPU while retaining the destination sensors and range.
+- Window position, size and maximized state restored across launches.
 
-- Bar response explains the control reading, resulting segments or speed, smoothing,
-  range limits and holds near a level boundary. Draft feedback is marked separately.
-- Clearer Animated bar (speed), Sensor meter (level), Fixed level and Playlist behaviors.
-- Playlists with ordered effects, independent durations and speeds for each side.
-- Profile previews, active markers, sensor-specific descriptions and direct activation
-  from Profiles or the tray, preserving the unsaved-edit checks.
-- Shorter sensor labels with technical IDs in secondary details and relevant readings first.
-- Copy animation between CPU and GPU while retaining destination sensors and ranges.
+### Changed
+
+- Distinct Animated bar (speed), Sensor meter (level), Fixed level and Playlist controls.
+- Shorter sensor labels, relevant readings first and technical IDs in secondary details.
 - Compact header, adjustable preview/editor divider and contextual profile actions.
-- Window position, size and maximized state retained across launches.
-- Guided sensor setup and an optional ten-second bar check that restores the active profile.
-- Startup diagnosis reports forced administrator compatibility without changing it.
+- English interface and system-error summaries, with regional number and date formats retained.
 
-## 0.1.0-beta.3 — Unreleased
+### Fixed
 
-- Sensor-level bars use the nearest segment instead of rounding down. Smoothed
-  full-scale readings can now reach level 7; wide hysteresis settings cannot
-  place the empty/full transition outside the sensor range.
-- The guide explains discrete bar levels and the Windows compatibility setting
-  that can prevent startup when an EXE is forced to run as administrator.
+- Sensor meters use the nearest segment instead of rounding down. Smoothed full-scale
+  readings can reach the full bar; hysteresis cannot make the endpoint unreachable.
+- Independent random sequences in CPU and GPU previews.
+- Activating a saved profile respects Save or Discard when the editor has unsaved changes.
+- Sensor selectors show readable labels, and tray profile submenus follow the selected theme.
+- Connection notices no longer shift the editor while a dropdown is open.
+- Startup diagnosis identifies forced administrator compatibility, which can prevent
+  automatic launch. The app does not change that Windows setting.
+
+### Updating
+
+Exit the running app from its tray menu, extract the entire new ZIP and run the new
+EXE. Keep the EXE and Core DLL together. Settings remain under
+`%LOCALAPPDATA%\ZX6DisplayControl`. If the app folder moved and Start with Windows
+is enabled, save preferences from the new copy to repair startup registration.
+
+Requires one Z-X6, AIDA64 shared memory and .NET Framework 4.7.2 or later.
+The executable is unsigned.
 
 ## 0.1.0-beta.2 — 2026-10-06
 

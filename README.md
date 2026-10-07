@@ -1,4 +1,4 @@
-# 🖥️ Z-X6 Display Control
+# Z-X6 Display Control
 
 Choose which sensors and animations your Z-X6 display uses.
 
@@ -8,30 +8,28 @@ It uses sensor readings from AIDA64 to show temperatures and animate the bars.
 Configure the CPU and GPU sides separately, save your choices as profiles and
 keep the display running from the Windows tray.
 
-## 🧩 What you can control
+## What you can control
 
 - **Temperature sources:** choose the sensor shown on each side.
 - **Bar animations:** fill, empty, bounce or random, with fixed speed or speed
   that follows a sensor reading.
 - **Playlists:** rotate through bar effects with a separate duration and speed for each step.
-- **Bar levels:** show a sensor value as a level, or hold a fixed level.
+- **Bar levels:** show a sensor value as a level, or hold a fixed level. Bar response
+  explains the reading, lit segments or speed, smoothing and range.
 - **Profiles:** start from protected built-in presets, save personal copies and import or export them.
 - **Display preview:** see both temperature readouts and animated levels together, with pending edits clearly marked.
 - **Daily operation:** turn the display on or off, use tray controls, choose
-  light, dark or system appearance, and optionally start with Windows.
+  light, dark or system appearance, switch profiles from the tray and optionally
+  start with Windows.
 
 The app reconnects automatically when the USB connection becomes available
 again and resumes updates when valid AIDA64 readings return.
 
-## 📦 Before you start
+## Before you start
 
-**Source version: `0.1.0-beta.5` (unreleased).** The executable is unsigned.
+**Current release: [0.1.0-beta.5](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases/tag/v0.1.0-beta.5).** The executable is unsigned.
 
-The app uses English for its interface and system-error summaries. Regional
-number and date formats are retained. Windows file pickers may use the Windows
-language when English resources are unavailable. Sensor names, custom profile
-names and original diagnostic details are preserved.
-The latest published release is `0.1.0-beta.2`.
+The interface is in English and uses your regional number and date formats.
 See the [changelog](CHANGELOG.md) for changes and upgrade notes.
 
 You need:
@@ -47,7 +45,7 @@ The app controls the two temperature readouts and their bars. It has no controls
 for RGB lighting, brightness, custom images or firmware updates. Other holder
 models and firmware variants have not been verified.
 
-## 🚀 Get started
+## Get started
 
 1. Download `ZX6DisplayControl.zip` from
    [Releases](https://github.com/XxYouDeaDPunKxX/zx6-display-control/releases)
@@ -73,7 +71,7 @@ Read the [online documentation](https://xxyoudeadpunkxx-zx6-display-control.mint
 for setup and daily operation. The project documentation is also indexed on
 [Context7](https://context7.com/xxyoudeadpunkxx/zx6-display-control).
 
-### 🔄 Updating the app
+### Updating the app
 
 The app checks GitHub at startup, at most once every 24 hours, and
 shows a link when a newer version is available. Published betas are included.
@@ -86,9 +84,9 @@ the EXE and Core DLL together. Profiles remain in your Windows user data folder.
 If the app's folder changes, save preferences again to repair Windows startup
 registration when enabled. The app never downloads or installs an update itself.
 
-## 📸 Screenshots
+## Screenshots
 
-The beta.2 interface, shown with sample readings.
+The beta.5 interface, rendered with sample readings.
 
 **Display:** both readouts and animations beside the CPU/GPU controls.
 
@@ -101,9 +99,9 @@ The beta.2 interface, shown with sample readings.
 ---
 
 <details>
-<summary>⚙️ Technical details</summary>
+<summary>Technical details</summary>
 
-### 🏗️ Architecture and execution model
+### Architecture and execution model
 
 The application is C# 5 with Windows Forms, targeting .NET Framework 4.7.2.
 `ZX6DisplayControl.exe` is the entry point; `ZX6DisplayControl.Core.dll` contains
@@ -138,7 +136,7 @@ The UI reads the latest published session state rather than performing serial
 I/O itself. File operations run asynchronously, with editing disabled while
 an operation is pending.
 
-### 🌡️ AIDA64 export and sensor selection
+### AIDA64 export and sensor selection
 
 The reader checks for the `aida64` process and opens the existing
 `AIDA64_SensorValues` memory map with read-only access. It reads only the sensors
@@ -177,7 +175,7 @@ provide a sensor-production timestamp, so unchanged values are not treated
 as proof that a sensor is stale. Diagnostics retains the last snapshot when
 reads fail and labels it as the last received data.
 
-### 🔌 Device discovery and serial connection
+### Device discovery and serial connection
 
 Discovery queries Windows WMI `Win32_PnPEntity` for COM-port devices and requires
 a healthy device whose instance ID exactly matches:
@@ -207,7 +205,7 @@ initialization. It sends temperature/bar updates only after initialization
 and while the display has valid temperatures and is enabled. The transport
 writes packets; it does not read acknowledgements from the holder.
 
-### 📡 Display packet format
+### Display packet format
 
 [PacketCodec.cs](src/Holder/PacketCodec.cs) defines the packet format implemented
 by this app. Temperature updates are **20 bytes**. Temperatures are truncated
@@ -248,7 +246,7 @@ on every data update. The write counter counts successful serial write calls,
 including control packets; it is not confirmation that the holder acknowledged
 or rendered a packet.
 
-### ⏱️ Scheduling, power and recovery
+### Scheduling, power and recovery
 
 Scheduling uses a `Stopwatch`-based monotonic clock.
 
@@ -284,7 +282,7 @@ On Windows suspend the session requests display off and closes the port.
 On resume it clears timing/animation state and starts reading and reconnecting
 again. Cleanup errors remain visible in session status and the event log.
 
-### 🎞️ Animation modes, mapping and smoothing
+### Animation modes, mapping and smoothing
 
 CPU and GPU use separate animation engines, settings and random generators.
 Temperature selection does not implicitly select the animation-control sensor,
@@ -295,6 +293,7 @@ except when using the explicit **Follow temperature** preset.
 | Animated bar · speed | Advance Fill, Empty, Bounce or Random at a fixed or sensor-driven speed. |
 | Sensor meter · level | Map the selected sensor to the nearest of eight bar levels. |
 | Fixed level | Hold the chosen level `0–7`. |
+| Playlist | Repeat ordered effects, each with its own duration and speed. |
 
 Playlist repeats 1–16 ordered effects. Each step selects a pattern, duration
 (1–600 seconds) and speed (1–4 fps). Pause freezes both the frame and step timer.
@@ -349,6 +348,10 @@ level uses that level's ordinary rounding boundary; otherwise its threshold
 could fall outside the sensor range. Hysteresis reduces repeated level changes
 when a sensor hovers around a boundary.
 
+**Bar response** shows the controlling sensor reading and the resulting lit
+segments or animation speed. It also explains smoothing, the input range and
+holds near a level boundary. **Preview response** identifies an unapplied draft.
+
 **Pause animation** holds only the bar; temperatures keep updating.
 Changing animation settings resets that engine. With no pending profile edits,
 the display preview uses the worker’s published temperatures and frames. It
@@ -358,7 +361,7 @@ engines and is labelled **Preview · not applied**. Off, disconnected or stopped
 states clear the readouts. The CPU/GPU controls retain ranges and timing when
 changing modes; choosing an animation preset explicitly replaces those values.
 
-### 🗂️ Profiles, drafts and persistence
+### Profiles, drafts and persistence
 
 [Profile.cs](src/Settings/Profile.cs) defines a profile as a name plus separate
 `Cpu` and `Gpu` channel settings. Each channel contains `TemperatureId`,
@@ -368,8 +371,7 @@ profile name, display power, startup/tray choices and appearance.
 The editor holds one selected draft. **Use profile** activates an unchanged
 selection; **Save changes** saves and activates a personal profile. Editing a
 built-in offers **Save as new profile**, using an available personal name.
-Switching away from a modified draft asks Save, Discard or Cancel. No hidden
-collection of drafts is saved later. **Revert profile** returns to the saved
+Switching away from a modified draft asks Save, Discard or Cancel. **Revert profile** returns to the saved
 active profile without discarding app preferences. Returning a value to its
 original setting clears its pending state.
 
@@ -430,7 +432,7 @@ settings, then the backup, then defaults; recovery reports a warning and
 retains the original files. Imported and stored JSON documents are limited
 to **1 MiB**.
 
-### 🪟 Tray, startup, appearance and shutdown
+### Tray, startup, appearance and shutdown
 
 The app uses a named mutex scoped to the Windows user SID. A second launch
 signals the existing instance to show its window instead of starting another
@@ -460,7 +462,7 @@ Native file pickers keep Windows styling. The interface scales to the system DPI
 at startup and provides F1/hover help. Moving between monitors with different
 scaling may blur the window; per-monitor DPI changes are not supported.
 
-### 🔄 GitHub release checks
+### GitHub release checks
 
 [UpdateService.cs](src/Updates/UpdateService.cs) reads this repository's public
 GitHub Releases API over HTTPS. No account, token or dedicated update server is
@@ -490,7 +492,7 @@ normal connection information, including the IP address. No sensor readings,
 profiles, diagnostics or logs are uploaded. The browser opens only when the user
 selects **Open release** or the update notice.
 
-### 🩺 Diagnostics and local data
+### Diagnostics and local data
 
 The only app network request is the GitHub release check described above.
 Display control works locally. Diagnostics exposes the exported sensor
@@ -516,15 +518,13 @@ events. It does not include AIDA64's INI/license or the complete sensor catalog.
 Review the report before sharing it: profile names, paths and exception details
 can contain personal information, including the Windows user name.
 
-### 🛠️ Build, packaging and source traceability
+### Build, packaging and source traceability
 
 Build requirements are Windows PowerShell 5.1, the .NET Framework C# compiler
 and the .NET Framework 4.7.2 Developer Pack reference assemblies. There are no
 NuGet dependencies or restore step. [Build.ps1](Build.ps1) invokes `csc.exe`
 directly with C# 5, optimization and warnings treated as errors.
-The repository has no automated CI workflow. Hash checks below verify that a
-package matches its local source/build record; they do not promise byte-identical
-rebuilds on another machine.
+Package checks verify that the binaries match the recorded source inputs.
 
 From the source folder:
 
@@ -560,7 +560,7 @@ while the fingerprint checks prevent packaging a stale or modified build.
 
 ---
 
-### 🤝 Contributing
+### Contributing
 
 Contributions are welcome. Use
 [Issues](https://github.com/XxYouDeaDPunKxX/zx6-display-control/issues)
@@ -574,14 +574,10 @@ problem concerns AIDA64 readings, port access, display values or animations.
 For pull requests, describe the change and what you checked. Keep changes
 compatible with the C# 5 / .NET Framework 4.7.2 build.
 
-## 📄 License
+## License
 
 MIT. See [LICENSE](LICENSE).
 
-## 🤖 AI-assisted development
+## AI-assisted development
 
 This project was developed with AI assistance.
-
-The project, documentation, and repository materials were shaped through human-directed work supported by AI tools during drafting, structuring, review, and refinement.
-
-AI assistance does not make the project automatically correct, complete, or suitable for every use case. Read it, test it, and adapt it to your own context.
