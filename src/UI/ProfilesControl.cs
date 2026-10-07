@@ -8,7 +8,7 @@ namespace ZX6DisplayControl {
   private readonly Label description=new Label{Name="ProfileDescription",AutoSize=true,Dock=DockStyle.Top,Margin=new Padding(0,10,0,8)};
   private string activeName;
   private readonly HolderPreview preview=new HolderPreview{Name="ProfilePreview",Dock=DockStyle.Fill};
-  private readonly AnimationEngine cpuPreview=new AnimationEngine(new Random()),gpuPreview=new AnimationEngine(new Random());
+  private readonly AnimationEngine cpuPreview=new AnimationEngine(new Random()),gpuPreview=new AnimationEngine(new Random(Guid.NewGuid().GetHashCode()));
   public event Action<string> Requested;
   public string SelectedName {get{return list.SelectedItem is Profile?((Profile)list.SelectedItem).Name:null;}}
   public ProfilesControl() {

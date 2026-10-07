@@ -6,6 +6,13 @@ namespace ZX6DisplayControl.Tests {
  public static class EverydayUsabilityTests {
   private sealed class NamedChoice {public string Label{get{return "CPU · Temperature";}}public override string ToString(){return "CPU · Temperature · TCPUDIO";}}
   private static IEnumerable<Control> All(Control root){foreach(Control c in root.Controls){yield return c;foreach(var child in All(c))yield return child;}}
+  [Test] public static void Everyday_RandomProfilePreviewUsesIndependentChannels() {
+   using(var profiles=new ProfilesControl()) {
+    profiles.SetProfiles(AppSettings.Defaults(),"Random");var preview=UiBindingTests.Find<HolderPreview>(profiles,"ProfilePreview");bool different=false;
+    for(int i=0;i<64;i++){profiles.UpdatePreview(null,false,.25);if(preview.CpuLevel!=preview.GpuLevel)different=true;}
+    Assert.True(different,"Random bars should not share an identical seeded sequence");
+   }
+  }
   [Test] public static void Everyday_DrawUsesTheSensorDisplayLabelAndThemesTrayChildren() {
    var theme=typeof(MainForm).Assembly.GetType("ZX6DisplayControl.UiTheme");var draw=theme.GetMethod("DrawChoice",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
    using(var named=new ComboBox{DisplayMember="Label"})using(var plain=new ComboBox())using(var a=new System.Drawing.Bitmap(400,30))using(var b=new System.Drawing.Bitmap(400,30)) {
