@@ -69,6 +69,10 @@ usage, export CPU Utilization (`SCPUUTI`) and GPU Utilization (`SGPU1UTI`) in AI
 See the [user guide](docs/Guide.txt) for sensor selection, animation settings,
 profiles and tray behavior. Hover over a control or press **F1** for help in the app.
 
+Read the [online documentation](https://xxyoudeadpunkxx-zx6-display-control.mintlify.site/)
+for setup and daily operation. The project documentation is also indexed on
+[Context7](https://context7.com/xxyoudeadpunkxx/zx6-display-control).
+
 ### 🔄 Updating the app
 
 The app checks GitHub at startup, at most once every 24 hours, and
