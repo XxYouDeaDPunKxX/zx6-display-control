@@ -55,7 +55,7 @@ namespace ZX6DisplayControl {
    displayPreview.ShowOutput(caption,ct,gt,c==null?(int?)null:c.Frame,g==null?(int?)null:g.Frame,pending);
    // Updating response labels inside the editor can dismiss a native popup.
    // Keep the drawn preview and operational status live; defer only these labels.
-   if(!open){cpu.SetPreview(c);gpu.SetPreview(g);}
+   if(!open){cpu.SetPreview(c,pending);gpu.SetPreview(g,pending);}
    tray.Text="Z-X6 Display Control · "+DeviceText(state.DeviceStatus);trayPower.Text=power.Text;trayStatus.Text=failed?"Controller stopped":state.Connected?(state.DisplayOff?"Display off · ":"Display enabled · ")+(available?"AIDA64 ready":"AIDA64 unavailable"):"Display "+DeviceText(state.DeviceStatus);
    if(BringToFrontRequested!=null)BringToFrontRequested();
   }

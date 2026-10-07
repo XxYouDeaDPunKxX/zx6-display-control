@@ -2,6 +2,8 @@
 
 ## 0.1.0-beta.4 — Unreleased
 
+- Bar response explains the control reading, resulting segments or speed, smoothing,
+  range limits and holds near a level boundary. Draft feedback is marked separately.
 - Clearer Animated bar (speed), Sensor meter (level), Fixed level and Playlist behaviors.
 - Playlists with ordered effects, independent durations and speeds for each side.
 - Profile previews, active markers, sensor-specific descriptions and direct activation

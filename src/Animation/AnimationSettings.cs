@@ -57,6 +57,7 @@ namespace ZX6DisplayControl {
   public double? RawValue {get;internal set;} public double? FilteredValue {get;internal set;}
   public double? NormalizedValue {get;internal set;} public double? FramesPerSecond {get;internal set;}
   public bool SourceMissing {get;internal set;} public bool Clamped {get;internal set;}
+  public bool HeldByHysteresis {get;internal set;}
   public int? PlaylistStepNumber {get;internal set;}
  }
 }

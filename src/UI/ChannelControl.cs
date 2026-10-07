@@ -21,7 +21,7 @@ namespace ZX6DisplayControl {
   private readonly CheckBox pause=new CheckBox{Text="Pause animation",AutoSize=true};
   private readonly CheckBox confirmRange=new CheckBox{Text="Use this sensor range",AutoSize=true};
   private readonly Label error=new Label{AutoSize=true,ForeColor=Color.Firebrick,Dock=DockStyle.Fill};
-  private readonly Label preview=new Label{AutoSize=false,Height=48,Dock=DockStyle.Fill,Text="Waiting for sensor data"};
+  private readonly Label preview=new Label{Name="BarResponse",AutoSize=true,Dock=DockStyle.Fill,Text="Waiting for sensor data",AccessibleDescription="The reading and resulting bar output. A meter has seven lit segments plus empty. Smoothing delays changes; hysteresis holds near a boundary to prevent flicker. An animated bar uses the reading to set speed instead of height. Preview response refers to unsaved changes."};
   private readonly TableLayoutPanel table=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,ColumnCount=2,Padding=new Padding(14)};
   private readonly Dictionary<Control,Label> captions=new Dictionary<Control,Label>();
   private bool loading,unknownRange;private string sourceUnit;private readonly bool isGpu;private AnimationOutput lastPreview;private readonly double[] filterValues={0,1,2,5};
@@ -31,6 +31,7 @@ namespace ZX6DisplayControl {
    isGpu=gpu;
    temperature.GpuChannel=source.GpuChannel=gpu;
    AutoScroll=true;BackColor=Color.White;table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,140));table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));Controls.Add(table);
+   table.SizeChanged+=(s,e)=>preview.MaximumSize=new Size(Math.Max(100,table.ClientSize.Width-table.GetColumnWidths()[0]-table.Padding.Horizontal-8),0);
    AddSection("Temperature number");AddRow("Sensor",temperature);AddSection("Bar behavior");AddRow("Behavior",mode);AddRow("Pattern",sequence);AddRow("Speed preset",simplePreset);AddRow("",explanation);AddRow("Control sensor",source);AddRow("Level",fixedFrame);AddRow("Effects",playlist);AddRow("",advanced);AddRow("Speed control",rate);AddRow("Speed (fps)",fixedFps);
    AddRow("Minimum input",inputMin);AddRow("Maximum input",inputMax);AddRow("Minimum speed (fps)",minFps);AddRow("Maximum speed (fps)",maxFps);
    AddRow("Response time",smoothing);AddRow("Level hysteresis (%)",hysteresis);AddRow("",invert);AddRow("",confirmRange);AddRow("",pause);AddRow("Response",preview);AddRow("",error);
@@ -75,11 +76,23 @@ namespace ZX6DisplayControl {
   }
   public void SetCatalog(SensorSnapshot catalog,bool deferStructure=false) {temperature.SetSnapshot(catalog,deferStructure);source.SetSnapshot(catalog,deferStructure);if(deferStructure)return;var unit=source.SelectedSensor==null?null:source.SelectedSensor.Unit;sourceUnit=unit;captions[inputMin].Text="Minimum input"+(unit==null?"":" ("+unit+")");captions[inputMax].Text="Maximum input"+(unit==null?"":" ("+unit+")");UpdateExplanation();}
   public void SetAvailable(bool value) {temperature.SetAvailable(value);source.SetAvailable(value);}
-  public void SetPreview(AnimationOutput output) {
+  public void SetPreview(AnimationOutput output,bool draft=false) {
+   captions[preview].Text=draft?"Preview response":"Bar response";
    if(output==null) {lastPreview=null;preview.Text="No display output";return;}lastPreview=output;
-   if(!advanced.Checked){preview.Text=output.SourceMissing?"Control sensor unavailable · holding the last level":pause.Checked && mode.SelectedIndex!=2?"Paused · temperatures continue updating":(output.PlaylistStepNumber.HasValue?"Effect "+output.PlaylistStepNumber+" · ":"")+(output.FramesPerSecond.HasValue?Format(output.FramesPerSecond)+" fps · ":"")+"Level "+output.Frame+" of 7";return;}
-   string reading=output.FilteredValue.HasValue?"Input: "+Format(output.RawValue)+"  →  Smoothed: "+Format(output.FilteredValue)+"\n":"";
-   preview.Text=output.SourceMissing?"Sensor unavailable · holding the last level":reading+(output.FramesPerSecond.HasValue?Format(output.FramesPerSecond)+" fps  ·  ":"")+"Level "+output.Frame+"/7"+(output.Clamped?" · at range limit":"");
+   AnimationSettings settings;try{settings=GetDraft().Animation;}catch(FormatException){preview.Text="Fix the highlighted settings to preview the response.";return;}
+   var sensor=source.SelectedSensor;string label=sensor==null?(source.SelectedId??"Control sensor"):sensor.Label,unit=sensor==null || string.IsNullOrEmpty(sensor.Unit)?"":" "+sensor.Unit;
+   string level=output.Frame+" of 7 segments",pattern=new[]{"Fill","Empty","Bounce","Random"}[(int)settings.Sequence];
+   if(output.SourceMissing){preview.Text=label+" unavailable · holding "+level+".\nExport this sensor in AIDA64 or select another control sensor.";return;}
+   if(pause.Checked && settings.Mode!=AnimationMode.Fixed){preview.Text="Paused at "+level+".\nTemperature updates continue.";return;}
+   if(settings.Mode==AnimationMode.Fixed){preview.Text="Fixed at "+level+".\nTemperature updates continue.";return;}
+   if(settings.Mode==AnimationMode.Playlist){int index=output.PlaylistStepNumber.GetValueOrDefault()-1;if(settings.Steps==null || index<0 || index>=settings.Steps.Count){preview.Text="Updating playlist…";return;}var step=settings.Steps[index];preview.Text="Effect "+output.PlaylistStepNumber+" of "+settings.Steps.Count+" · "+new[]{"Fill","Empty","Bounce","Random"}[(int)step.Pattern]+"\n"+Format(output.FramesPerSecond)+" updates/s · "+step.Seconds+" s per effect";return;}
+   if(!settings.NeedsSource){preview.Text=pattern+" · "+Format(output.FramesPerSecond)+" updates/s\nConstant speed";return;}
+   string result=settings.Mode==AnimationMode.SensorLevel?level:Format(output.FramesPerSecond)+" updates/s · "+pattern;
+   var lines=new List<string>{label+": "+Format(output.RawValue)+unit+" → "+result};
+   if(settings.FilterSeconds>0)lines.Add("Smoothed: "+Format(output.FilteredValue)+unit+" · response "+Format(settings.FilterSeconds)+" s");
+   lines.Add("Range: "+Format(settings.InputMin)+"–"+Format(settings.InputMax)+unit+(settings.Invert?" · inverted":""));
+   if(output.HeldByHysteresis)lines.Add("Held near a level boundary to prevent flicker.");else if(output.Clamped)lines.Add("Outside the range · output limited to the nearest end.");
+   preview.Text=string.Join(Environment.NewLine,lines);
   }
   private static string Format(double? value) {return value.HasValue?value.Value.ToString("0.##",CultureInfo.CurrentCulture):"—";}
   public void CopyAnimationFrom(ChannelSettings other,SensorSnapshot catalog) {

@@ -46,7 +46,7 @@ namespace ZX6DisplayControl {
     if(!levelInitialized || normalized<=0 || normalized>=1 || endpoint ||
        (candidate>frame && normalized>=(frame+.5)/7.0+h) ||
        (candidate<frame && normalized<=(frame-.5)/7.0-h)) frame=candidate;
-    levelInitialized=true;
+    output.HeldByHysteresis=frame!=candidate;levelInitialized=true;
    } else {
     // A delayed worker skips missed time; it never replays a backlog to USB.
     double cycleTime=changed || wasPaused || elapsedSeconds>1?0:elapsedSeconds;

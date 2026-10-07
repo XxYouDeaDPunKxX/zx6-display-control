@@ -51,6 +51,11 @@ Without smoothing or hysteresis, 25% maps to level 2, 50% to 4 and 100% to 7.
 Smoothing delays changes; hysteresis prevents flicker near a level boundary.
 Choosing another unit adapts known ranges (% and °C). For RPM, watts and other units,
 review and confirm the range in Advanced settings. No thresholds are inferred for them.
+Bar response shows the control reading and its resulting level or animation speed.
+For a sensor meter, it reports lit segments, smoothed reading and the input range.
+Held near a level boundary explains when hysteresis prevents a small change from
+switching segments. A stationary bar alone does not mean readings have stopped.
+Preview response labels an unapplied draft; Bar response uses the sent output.
 Pause animation holds only that bar; valid temperature numbers continue updating.
 The Display tab shows both temperature readouts and animated levels together.
 Output sent to display uses the controller’s last completed transmission. Preview · not applied
