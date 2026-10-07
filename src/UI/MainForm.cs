@@ -8,8 +8,8 @@ namespace ZX6DisplayControl {
   private async Task ExportDiagnostics() {lastSaveFeedback="Export canceled.";using(var dialog=new SaveFileDialog{Filter="Diagnostics text|*.txt",FileName="holder-diagnostics.txt",OverwritePrompt=true})if(dialog.ShowDialog(this)==DialogResult.OK){string path=dialog.FileName;var state=controller.State;var snapshot=saved.Copy();await Task.Run(()=>log.Export(path,state,snapshot,UpdateService.CurrentVersion));lastSaveFeedback="Diagnostics exported.";}}
   private async void Attempt(Action action) {Exception failure=null;try{action();}catch(Exception e){failure=e;}if(failure!=null){await log.WriteAsync("action failed",failure.Message,failure);ShowActionError(failure);}}
   private async void AttemptAsync(Func<Task> action) {try{await action();}catch(Exception e){ShowActionError(e);}}
-  private void ShowActionError(Exception error){if(!IsDisposed && !Disposing && !closing)AppDialog.Show(this,error.Message,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
-  public void ShowWindow() {Show();WindowState=FormWindowState.Normal;Activate();}
+  private void ShowActionError(Exception error){if(!IsDisposed && !Disposing && !closing){ShowWindow();AppDialog.Show(this,error.Message,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Warning);} }
+  public void ShowWindow() {Show();if(WindowState==FormWindowState.Minimized)WindowState=restoredState;Activate();}
   public void StartInTray() {Hide();}
   private DialogResult AskSave() {ShowWindow();return AppDialog.Show(this,"Save changes before exiting?","Unsaved changes",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question);}
   public bool RequestExit(Func<DialogResult> ask) {
@@ -17,7 +17,7 @@ namespace ZX6DisplayControl {
    if(!Visible)ShowWindow();
    DialogResult decision=DialogResult.No;bool askAfterOperation=busy;
    if(!busy && dirty){decision=ask();if(decision!=DialogResult.Yes && decision!=DialogResult.No)return false;}
-   closing=true;CancelUpdateCheck();shutdownStatus=busy?"Finishing the current operation…":"Stopping controller…";RefreshFromState();FinishExit(ask,decision,askAfterOperation);return true;
+   StopDisplayCheck();closing=true;CancelUpdateCheck();shutdownStatus=busy?"Finishing the current operation…":"Stopping controller…";RefreshFromState();FinishExit(ask,decision,askAfterOperation);return true;
   }
   private async void FinishExit(Func<DialogResult> ask,DialogResult decision,bool askAfterOperation) {
    try {
@@ -36,6 +36,7 @@ namespace ZX6DisplayControl {
   }
   private void ExitApp() {Attempt(()=>RequestExit(AskSave));}
   private void OnFormClosing(object sender,FormClosingEventArgs e) {
+   StopDisplayCheck();
    if(exiting)return;
    if(e.CloseReason==CloseReason.WindowsShutDown){
     // An idle end-session query is not confirmation: another app may veto it.
@@ -50,6 +51,6 @@ namespace ZX6DisplayControl {
    if(!saved.CloseToTrayExplained && !busy){tray.ShowBalloonTip(5000,"Z-X6 Display Control is still running","Open the tray icon to return, or choose Exit to stop the controller.",ToolTipIcon.Info);AttemptAsync(()=>RunOperation("Remember tray preference",async()=>{var snapshot=saved.Copy();snapshot.CloseToTrayExplained=true;await Task.Run(()=>store.Save(snapshot));if(IsDisposed || Disposing)return;saved=snapshot;}));}
    Hide();
   }
-  protected override void Dispose(bool disposing) {if(disposing){CancelUpdateCheck();if(!closing)controller.Stop();closing=true;timer.Stop();timer.Dispose();if(contextHelp!=null)contextHelp.Dispose();tray.Visible=false;var menu=tray.ContextMenuStrip;tray.Dispose();if(menu!=null)menu.Dispose();if(Icon!=null)Icon.Dispose();}base.Dispose(disposing);}
+  protected override void Dispose(bool disposing) {if(disposing){StopDisplayCheck();CancelUpdateCheck();if(!closing)controller.Stop();closing=true;timer.Stop();timer.Dispose();if(contextHelp!=null)contextHelp.Dispose();tray.Visible=false;var menu=tray.ContextMenuStrip;tray.Dispose();if(menu!=null)menu.Dispose();if(Icon!=null)Icon.Dispose();}base.Dispose(disposing);}
  }
 }

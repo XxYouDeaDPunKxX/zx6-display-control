@@ -7,6 +7,14 @@ namespace ZX6DisplayControl {
   private readonly IStartupStore store;
   public StartupRegistration(IStartupStore store=null) {this.store=store??new RegistryStartupStore();}
   public bool GetEnabled(string exePath) {return string.Equals(store.Read(),Command(exePath),StringComparison.OrdinalIgnoreCase);}
+  public static string CompatibilityWarning(string exePath) {
+   const string layers=@"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers";
+   foreach(var hive in new[]{Registry.CurrentUser,Registry.LocalMachine})using(var key=hive.OpenSubKey(layers)) {
+    string flags=key==null?null:key.GetValue(Path.GetFullPath(exePath)) as string;
+    if(flags!=null && Array.Exists(flags.Split(' '),flag=>string.Equals(flag,"RUNASADMIN",StringComparison.OrdinalIgnoreCase)))return "Windows is forcing this EXE to run as administrator, which can block startup at sign-in. In the EXE's Properties → Compatibility, clear Run this program as an administrator.";
+   }
+   return null;
+  }
   public void SetEnabled(bool enabled,string exePath) {if(enabled) store.Write(Command(exePath));else store.Delete();}
   public void CommitEnabled(bool enabled,string exePath,Action persistSettings) {
    string previous=store.Read(),desired=enabled?Command(exePath):null;

@@ -13,7 +13,7 @@ namespace ZX6DisplayControl {
    {"Power","Turn the entire display on or off immediately. This does not apply pending edits."},
    {"Reconnect","Retry USB detection now. Only one application can use the holder's serial port at a time."},
    {"Exit","Stop the controller, release the USB port and close the app. You will be asked about unsaved changes."},
-   {"Mode","Loop plays the built-in bar animation. Sensor level maps a reading to one of eight levels. Fixed level holds a chosen level."},
+   {"Mode","Animated bar changes speed; Sensor meter indicates a reading with its level. Fixed level holds one position. Playlist rotates through effects with individual speed and duration."},
    {"Sequence","Fill, empty, bounce between both ends, or jump between random levels. Each side runs independently."},
    {"SimplePreset","Choose a ready-made speed or sensor response. Select Custom to adjust its range and timing."},
    {"AdvancedOptions","Show sensor ranges, exact speed limits, smoothing and response direction for this side only."},
@@ -86,29 +86,39 @@ namespace ZX6DisplayControl {
   private readonly Label recovery=new Label{AutoSize=true,Dock=DockStyle.Top};
   private readonly Button retry=new Button{Name="Reconnect",Text="Reconnect",AutoSize=true};
   private readonly Button edit=new Button{Text="Choose sensors",AutoSize=true,AccessibleDescription="Open the CPU and GPU temperature controls."};
-  private readonly Button exit=new Button{Name="ControllerExit",Text="Exit and reopen",AutoSize=true,AccessibleDescription="Exit the stopped controller. Reopen the app after it has closed."};
+  private readonly Button exit=new Button{Name="ControllerExit",Text="Exit app",AutoSize=true,AccessibleDescription="Exit the stopped controller. Reopen the app after it has closed."};
+  private readonly QuickSetupControl setup=new QuickSetupControl{Visible=false};
+  private readonly Button check=new Button{Name="TestBars",Text="Test bars (10 seconds)",AutoSize=true,AccessibleDescription="Temporarily show CPU empty / GPU full, then the opposite. Keep real temperatures from the active profile. Restore the profile after ten seconds or when stopped. Activate sensor choices before this test."};
+  private readonly Label checkStatus=new Label{AutoSize=true,Dock=DockStyle.Top,Text="Optional: check both bars using the active profile's temperatures."};
   public event Action RetryRequested,EditSensorsRequested,ExitRequested;
+  public event Action SetupRequested,CheckRequested;
+  public event Action<string,string,string,string> SetupReviewed;
   public DeviceSetupControl() {
-   var table=InfoPage.Layout(this);InfoPage.Heading(table,"Display connection");InfoPage.Add(table,usb);InfoPage.Add(table,recovery);
+   var table=InfoPage.Layout(this);InfoPage.Heading(table,"1 · Connect the display");InfoPage.Add(table,usb);InfoPage.Add(table,recovery);
    retry.Click+=(s,e)=>{if(RetryRequested!=null)RetryRequested();};exit.Click+=(s,e)=>{if(ExitRequested!=null)ExitRequested();};
    var actions=new FlowLayoutPanel{AutoSize=true,Dock=DockStyle.Fill};actions.Controls.Add(retry);actions.Controls.Add(exit);InfoPage.Add(table,actions);
-   InfoPage.Heading(table,"AIDA64 sensors");InfoPage.Add(table,aida);edit.Click+=(s,e)=>{if(EditSensorsRequested!=null)EditSensorsRequested();};InfoPage.Add(table,edit);
-   InfoPage.Heading(table,"Connect or change your setup");
+   InfoPage.Heading(table,"2 · Share readings from AIDA64");InfoPage.Add(table,aida);edit.Click+=(s,e)=>{if(EditSensorsRequested!=null)EditSensorsRequested();};
    InfoPage.Paragraph(table,"In AIDA64 Preferences → Hardware Monitoring → External Applications, enable shared memory and select the temperatures you want to display. For usage-based animation, also export CPU Utilization and GPU Utilization.");
    InfoPage.Paragraph(table,"Disable AIDA64's Turing LCD output and close the original GPU LCD utility so the USB port is available. SensorPanel can remain enabled.");
-   InfoPage.Paragraph(table,"Choose a temperature for CPU and GPU on the Display tab, then use or save the profile. The app reads AIDA64 settings; it does not change them.");
+   InfoPage.Heading(table,"3 · Choose readings");
+   var begin=new Button{Name="OpenSetup",Text="Set up sensors…",AutoSize=true,AccessibleDescription="Choose the two temperature readings and optional bar sensors together. Your current draft is used as the starting point."};begin.Click+=(s,e)=>{if(SetupRequested!=null)SetupRequested();};InfoPage.Add(table,begin);InfoPage.Add(table,setup);InfoPage.Add(table,edit);
+   setup.ReviewRequested+=(ct,gt,cb,gb)=>{if(SetupReviewed!=null)SetupReviewed(ct,gt,cb,gb);};
+   InfoPage.Heading(table,"4 · Check the display");InfoPage.Add(table,checkStatus);InfoPage.Add(table,check);check.Click+=(s,e)=>{if(CheckRequested!=null)CheckRequested();};
   }
+  public void OpenSetup(Profile profile,SensorSnapshot snapshot){setup.SetProfile(profile,snapshot);setup.Visible=true;ScrollControlIntoView(setup);}
+  public void UpdateCatalog(SensorSnapshot snapshot,bool available,bool defer){if(setup.Visible)setup.UpdateCatalog(snapshot,available,defer);}
+  public void SetCheckStatus(string text,bool running){checkStatus.Text=text;check.Text=running?"Stop display check":"Test bars (10 seconds)";}
   public void UpdateState(SessionState value,bool failed=false,bool enabled=true) {
    usb.Text=failed?"Controller stopped":value.Connected?"Z-X6 connected · "+value.PortName:"Z-X6 not connected";
    recovery.Text=failed?"Exit the app, then reopen it to restart the controller.":value.DeviceStatus=="Ambiguous"?"More than one matching holder is connected. Disconnect the extra holder to resume updates.":value.DeviceStatus=="PortBusy"?"The USB port is in use. Close the original utility or AIDA64 Turing LCD output, then reconnect.":value.Connected?"The display is detected automatically if its USB port changes.":"Connect the holder's USB cable, then reconnect.";
    aida.Text=failed?"Readings stopped.":value.AidaStatus=="TemperatureLimited"?value.Error:value.AidaStatus=="Ready"?"Sensors ready · "+(value.Snapshot==null?0:value.Snapshot.Values.Count)+" exported readings":value.AidaStatus=="TemperatureInvalid"?"A selected temperature is missing, non-numeric or below 0 °C. Choose an exported temperature for each side.":value.AidaStatus=="AccessDenied"?"Windows denied access to AIDA64 sensor sharing. Close and reopen both apps under the same Windows account and permission level.":"No current readings. Open AIDA64 and enable shared memory below.";
-   retry.Enabled=enabled && !failed;exit.Visible=failed;exit.Enabled=enabled;edit.Enabled=enabled;
+   retry.Enabled=enabled && !failed;exit.Visible=failed;exit.Enabled=enabled;edit.Enabled=enabled;check.Enabled=enabled && !failed && value.Connected;
   }
   public void UpdateUnavailable(bool failed,bool enabled) {
    usb.Text=failed?"Controller stopped":"Waiting for the controller";
    recovery.Text=failed?"Exit the app, then reopen it to restart the controller.":"Checking the USB connection…";
    aida.Text=failed?"Readings stopped.":"Waiting for AIDA64 readings…";
-   retry.Enabled=enabled && !failed;exit.Visible=failed;exit.Enabled=enabled;edit.Enabled=enabled;
+   retry.Enabled=enabled && !failed;exit.Visible=failed;exit.Enabled=enabled;edit.Enabled=enabled;check.Enabled=false;
   }
  }
 }

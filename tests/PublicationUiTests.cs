@@ -16,7 +16,7 @@ namespace ZX6DisplayControl.Tests {
    using(var dir=new TempDirectory())using(var rig=new SessionRig()) {
     rig.At(0);using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(new FakeStartupStore()),@"C:\Holder.exe")) {
      UiBindingTests.Find<TextBox>(UiBindingTests.Find<ChannelControl>(form,"CpuChannel"),"FixedFps").Text="4";UiTestPump.Wait(form.ApplyChanges());
-     var list=All(form).OfType<ListBox>().Single();Assert.Equal(4.0,list.Items.Cast<Profile>().Single(p=>p.Name=="Classic (custom)").Cpu.Animation.FixedFps);
+     var list=All(All(form).OfType<ProfilesControl>().Single()).OfType<ListBox>().Single();Assert.Equal(4.0,list.Items.Cast<Profile>().Single(p=>p.Name=="Classic (custom)").Cpu.Animation.FixedFps);
     }
    }
   }

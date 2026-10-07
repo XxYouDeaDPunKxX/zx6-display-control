@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace ZX6DisplayControl {
  public sealed partial class MainForm {
   public void RefreshFromState() {
-   if(editing==null)return;
+   if(editing==null)return;UpdateDisplayCheck();
    diagnostics.UpdateLog(log,closing?shutdownStatus:operationName);
    if(closing){notice.Text=shutdownStatus;notice.Visible=true;apply.Enabled=cancel.Enabled=power.Enabled=profileChoice.Enabled=tabs.Enabled=trayPower.Enabled=false;return;}
    bool open=HasOpenDropDown(this);
@@ -39,8 +39,8 @@ namespace ZX6DisplayControl {
    power.Text=saved.DisplayEnabled?"Turn display off":"Turn display on";power.Enabled=trayPower.Enabled=!busy && !failed;
    notice.Text=string.Join(" ",new[]{failed?"The controller stopped. Exit and reopen the app to reconnect.":state.Error,log.LastError==null?null:"Log file unavailable: "+log.LastError}.Where(x=>!string.IsNullOrEmpty(x)));notice.Visible=!string.IsNullOrWhiteSpace(notice.Text);
    cpu.SetCatalog(state.Snapshot,open);gpu.SetCatalog(state.Snapshot,open);cpu.SetAvailable(available);gpu.SetAvailable(available);
-   deviceSetup.UpdateState(state,failed,!busy);diagnostics.SetActionsEnabled(!busy,!failed);diagnostics.UpdateState(state,available);
-   double now=previewClock.Elapsed.TotalSeconds,elapsed=now-previousPreview;previousPreview=now;
+   deviceSetup.UpdateState(state,failed,!busy);deviceSetup.UpdateCatalog(state.Snapshot,available,open);diagnostics.SetActionsEnabled(!busy,!failed);diagnostics.UpdateState(state,available);
+   double now=previewClock.Elapsed.TotalSeconds,elapsed=now-previousPreview;previousPreview=now;profiles.UpdatePreview(state.Snapshot,available,elapsed);
    bool canShow=!failed && saved.DisplayEnabled && state.Connected && state.DisplayPowerKnown && !state.DisplayOff && available;
    AnimationOutput c=null,g=null;int? ct=null,gt=null;
    string caption=failed?"Controller stopped":!saved.DisplayEnabled || state.DisplayOff?"Display off":!state.Connected?"Display disconnected":!available?"Waiting for sensor readings":"Waiting for display output";

@@ -20,7 +20,7 @@ namespace ZX6DisplayControl {
     try {var value=Read<AppSettings>(BackupPath);value.Validate();ProfileLibrary.Upgrade(value);return new SettingsLoadResult{Settings=value,UsedBackup=true,Warning="Previous settings restored. The original file has been retained."};}
     catch(Exception e) {if(!Recoverable(e))throw;warning="Settings and backup could not be read. Default profiles loaded; both files have been retained.";}
    }
-   return new SettingsLoadResult{Settings=AppSettings.Defaults(),Warning=warning};
+   return new SettingsLoadResult{Settings=AppSettings.Defaults(),Warning=warning,FirstRun=warning==null};
   }
   public void Save(AppSettings value) {
    value.Validate();byte[] bytes=Serialize(value);Directory.CreateDirectory(directory);

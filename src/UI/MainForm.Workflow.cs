@@ -16,6 +16,15 @@ namespace ZX6DisplayControl {
   private bool ProfilePending {get{return editing!=null && (ContentChanged || editing.Name!=saved.ActiveProfileName);}}
   private bool PreferencesPending {get{return startupBox.Checked!=saved.StartWithWindows || closeBox.Checked!=saved.CloseToTray || minimizeBox.Checked!=saved.MinimizeToTray || updateStartupBox.Checked!=saved.CheckUpdatesOnStartup || Math.Max(0,themeChoice.SelectedIndex)!=(int)saved.Theme;}}
   public Task ApplyChanges() {return RunOperation("Save profile",ApplyCore);}
+  public Task ActivateProfile(string name,Func<DialogResult> ask) {return RunOperation("Use profile",()=>ActivateProfileCore(name,ask));}
+  private async Task ActivateProfileCore(string name,Func<DialogResult> ask) {
+   if(name==editing.Name && ContentChanged) {
+    var answer=ask();if(answer==DialogResult.Cancel || (answer!=DialogResult.Yes && answer!=DialogResult.No))return;
+    if(answer==DialogResult.No){editing=saved.Profiles.Single(p=>p.Name==name).Copy();LoadEditor();}
+    await ApplyCore();return;
+   }
+   if(await ChooseProfile(name,ask))await ApplyCore();
+  }
   private async Task ApplyCore() {
    var value=ReadDraft();var snapshot=saved.Copy();
    if(value.IsBuiltIn && ContentChanged) {
@@ -38,10 +47,10 @@ namespace ZX6DisplayControl {
   }
   private void LoadProfileChoices() {
    bool previous=updating;updating=true;try {
-    profileChoice.Items.Clear();profileChoice.Items.AddRange(saved.Profiles.Select(p=>(object)p.Name).ToArray());profileChoice.SelectedItem=editing.Name;profiles.SetProfiles(saved,editing.Name);
+    profileChoice.Items.Clear();profileChoice.Items.AddRange(saved.Profiles.Select(p=>(object)p.Name).ToArray());profileChoice.SelectedItem=editing.Name;profiles.SetProfiles(saved,editing.Name);RefreshTrayProfiles();
    }finally{updating=previous;}
   }
-  private DialogResult AskSwitch() {return AppDialog.Show(this,"Save changes to “"+editing.Name+"” before opening another profile?"+(editing.IsBuiltIn?"\nSaving creates a personal copy.":""),"Unsaved profile",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question);}
+  private DialogResult AskSwitch() {ShowWindow();return AppDialog.Show(this,"Save changes to “"+editing.Name+"” before continuing?"+(editing.IsBuiltIn?"\nSaving creates a personal copy.":""),"Unsaved profile",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question);}
   // The decision belongs to the current draft only; no other profile is staged.
   public async Task<bool> SelectProfile(string name,Func<DialogResult> ask) {
    bool selected=false;await RunOperation("Change profile",async()=>{selected=await ChooseProfile(name,ask);});return selected;
@@ -68,8 +77,8 @@ namespace ZX6DisplayControl {
    if(IsDisposed || Disposing)return;saved=snapshot;preferenceStatus.Text="Preferences saved.";lastSaveFeedback="Preferences saved. Profile edits are unchanged.";await RefreshStartup();
   }
   private async Task RefreshStartup() {
-   try {bool enabled=await Task.Run(()=>startup.GetEnabled(exePath));if(IsDisposed || Disposing)return;
-    startupStatus.Text=enabled?"This copy is registered to start with Windows.":saved.StartWithWindows?"Startup registration does not point to this copy. Save preferences to repair it.":"This copy is not registered to start with Windows.";
+   try {var startupInfo=await Task.Run(()=>new {Enabled=startup.GetEnabled(exePath),Warning=StartupRegistration.CompatibilityWarning(exePath)});bool enabled=startupInfo.Enabled;if(IsDisposed || Disposing)return;
+    startupStatus.Text=startupInfo.Warning??(enabled?"This copy is registered to start with Windows.":saved.StartWithWindows?"Startup registration does not point to this copy. Save preferences to repair it.":"This copy is not registered to start with Windows.");
    }catch(Exception e){if(!IsDisposed && !Disposing)startupStatus.Text="Could not check Windows startup: "+e.Message;}
   }
   private void Changed() {if(updating)return;lastSaveFeedback=null;preferenceStatus.Text=PreferencesPending?"Unsaved preferences":"";RefreshFromState();}
@@ -84,7 +93,7 @@ namespace ZX6DisplayControl {
   }));}
   private async Task RunOperation(string name,Func<Task> action,bool duringExit=false) {
    if(busy || (closing && !duringExit))throw new InvalidOperationException("Wait for the current operation to finish.");
-   busy=true;operationName=name;operationIdle=new TaskCompletionSource<bool>();var idle=operationIdle;lastSaveFeedback=null;SetEditingEnabled(false);RefreshFromState();
+   StopDisplayCheck();busy=true;operationName=name;operationIdle=new TaskCompletionSource<bool>();var idle=operationIdle;lastSaveFeedback=null;SetEditingEnabled(false);RefreshFromState();
    try {
     Exception failure=null;
     try {await log.WriteAsync("action started",name);if(IsDisposed || Disposing)return;await action();await log.WriteAsync("action finished",name+(lastSaveFeedback==null?"":": "+lastSaveFeedback));}
@@ -94,13 +103,14 @@ namespace ZX6DisplayControl {
   }
   private void SetEditingEnabled(bool enabled) {
    if(enabled)tabs.Enabled=true;
-   cpu.Enabled=gpu.Enabled=profiles.Enabled=deviceSetup.Enabled=settingsPage.Enabled=profileChoice.Enabled=power.Enabled=trayPower.Enabled=enabled;
+   cpu.Enabled=gpu.Enabled=profiles.Enabled=deviceSetup.Enabled=settingsPage.Enabled=profileChoice.Enabled=power.Enabled=trayPower.Enabled=trayProfiles.Enabled=enabled;
    checkUpdates.Enabled=enabled && updates!=null && !checkingUpdates;
    diagnostics.SetActionsEnabled(enabled);apply.Enabled=enabled && ProfilePending && CanApply;cancel.Enabled=enabled && ProfilePending;
   }
   private async Task ProfileAction(string action) {
    string selected=profiles.SelectedName??editing.Name;var current=saved.Profiles.Single(p=>p.Name==selected);
    if(action=="Edit") {if(await ChooseProfile(selected,AskSwitch))tabs.SelectedIndex=0;return;}
+   if(action=="Use") {await ActivateProfileCore(selected,AskSwitch);return;}
    lastSaveFeedback="Action canceled.";
    if(action=="Export") {
     using(var dialog=new SaveFileDialog{Title="Export saved profile: "+selected,Filter="Profile JSON|*.json",FileName="holder-profile.json",OverwritePrompt=true}) {

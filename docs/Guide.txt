@@ -1,4 +1,4 @@
-Z-X6 DISPLAY CONTROL — 0.1.0-beta.3
+Z-X6 DISPLAY CONTROL — 0.1.0-beta.4
 
 Get started
 Extract the entire folder, keeping ZX6DisplayControl.Core.dll beside ZX6DisplayControl.exe. Run the EXE.
@@ -18,16 +18,31 @@ Disable AIDA64 LCD > Turing and close the original GPU LCD software: the serial 
 can only have one owner. SensorPanel can remain enabled. This app does not change
 AIDA64 preferences. Install and configure AIDA64 separately.
 
+Guided setup
+Connection opens on the first launch and remains available afterwards. Follow its
+numbered steps, select Set up sensors, then Review profile. These selections remain
+a draft until you use or save the profile. Quick setup supports usage and temperature
+bar sources; use Advanced settings for other units.
+The optional Test bars uses the active profile and real temperatures. CPU is empty
+and GPU full for five seconds, then they swap. After ten seconds, Stop display check,
+leaving Connection, a connection error or another action restores the active profile.
+The test does not save settings or create a test profile.
+
 Configure each side
 Temperature chooses the number shown on that side of the holder. Animation has its
 own control sensor; changing it does not change the temperature number.
-Pick sensors from the list by name, measurement type, unit and ID. Search is optional.
+Pick sensors by name, measurement type and unit. Relevant CPU/GPU readings appear
+first; selection always remains yours. The selected ID appears below the list and
+also distinguishes duplicate names. Search by name or ID is optional.
 
 Modes:
-  Loop: Fill, Empty, Bounce or Random. Speed presets: Slow (1 fps), Normal (2 fps),
+  Animated bar (speed): Fill, Empty, Bounce or Random. Speed presets: Slow (1 fps), Normal (2 fps),
         Fast (4 fps), Follow usage or Follow temperature.
-  Sensor level: map a sensor reading to the nearest of eight bar levels.
+  Sensor meter (level): map a sensor reading to the nearest of eight bar levels.
   Fixed level: hold a level from 0 (empty) to 7 (full).
+  Playlist: 1–16 effects, each with a pattern, duration (1–600 seconds) and speed
+            (1–4 fps). Add, remove or reorder steps; the list repeats. Pause holds
+            the current effect and its elapsed time.
 Follow usage starts with a 0–100% range. Follow temperature uses the selected display
 temperature and a 30–80 °C range. Advanced settings exposes exact ranges, speed,
 response time, inversion and level hysteresis. Closing it retains custom settings.
@@ -44,6 +59,9 @@ representation of commands: the holder does not report its physical screen state
 Off, disconnected and stopped states clear the preview. Missing draft temperatures
 leave the readout blank. Changing modes retains valid ranges, sources and timing.
 Choosing an animation preset explicitly replaces its parameters.
+Copy CPU/GPU animation copies the other side into this draft while retaining the
+destination temperature, control sensor and input range. Review before saving.
+Drag the divider between the display preview and controls to adjust their widths.
 The holder displays whole degrees from 0 to 99 °C; fractions are truncated.
 Above 99 °C it stays on and shows 99. The app warns with the actual temperature;
 sensor-driven animations continue using the original reading.
@@ -63,7 +81,8 @@ Built-in Standard profiles: Classic (steady fill), Activity (speed follows usage
 Thermal (speed follows temperature) and Sensor levels (bar height follows usage).
 Built-in Creative profiles: Random, Breathe (slow fill/empty), Counterflow
 (CPU fills while GPU empties) and Split tempo (CPU 1 fps, GPU 4 fps).
-Profiles lists these separately from My profiles. Select Edit to open one in the
+Profiles marks the active profile and previews the selected one. Use profile
+activates it directly. Select Edit to open one in the
 editor, or Duplicate to make a personal copy. New creates a personal profile.
 More contains rename, JSON import/export and delete. Built-ins cannot be renamed
 or deleted. These collection actions save immediately and preserve unrelated edits.
@@ -81,7 +100,8 @@ Settings & About > Close to tray keeps the controller running when the window cl
 This is enabled by default. Minimize to tray is a separate option, initially off.
 Double-click the notification-area icon to reopen the window. If Windows hides the
 icon, expand the notification-area overflow. Launching the EXE again also opens it.
-The tray menu provides window, power, settings and exit actions. Exit stops updates,
+The tray menu provides profile switching, window, power, settings and exit actions.
+Window position, size and maximized state are retained across launches. Exit stops updates,
 requests display off and releases the serial port. Unsaved changes offer Save, Discard
 or Cancel. Closing to the tray keeps pending edits in memory until the app exits.
 Exit waits for an active file operation and controller cleanup while keeping the
@@ -96,7 +116,8 @@ Start with Windows is opt-in and starts the app in the tray. Settings shows whet
 registration points to this copy. If the folder moves, keep Start with Windows
 selected and Save preferences to repair the registration.
 Leave "Run this program as an administrator" disabled in the EXE's Windows
-Compatibility properties. It can block startup because Windows cannot launch
+Compatibility properties. Settings reports this flag if present, without changing it.
+It can block startup because Windows cannot launch
 that copy without elevation. The app does not require administrator rights.
 Appearance offers Light, Dark or System. Theme previews immediately; Save preferences
 keeps it and Revert preferences restores the saved theme. Windows high contrast takes precedence. System follows
@@ -143,7 +164,7 @@ be written. Export diagnostics includes this event history and the available log
 
 Local data and removal
 Settings & About can open %LOCALAPPDATA%\ZX6DisplayControl. It contains settings.json,
-settings.previous.json, update-check.json and up to two 1 MB log files. Invalid settings files are retained
+settings.previous.json, window.json, update-check.json and up to two 1 MB log files. Invalid settings files are retained
 during recovery. Diagnostics exports selected IDs, the active profile, status, counters
 and recent events; it does not include AIDA64's INI/license or the entire sensor catalog.
 Release checks contact GitHub over HTTPS with the app name and version. GitHub

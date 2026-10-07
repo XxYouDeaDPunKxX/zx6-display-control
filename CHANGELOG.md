@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0-beta.4 — Unreleased
+
+- Clearer Animated bar (speed), Sensor meter (level), Fixed level and Playlist behaviors.
+- Playlists with ordered effects, independent durations and speeds for each side.
+- Profile previews, active markers, sensor-specific descriptions and direct activation
+  from Profiles or the tray, preserving the unsaved-edit checks.
+- Shorter sensor labels with technical IDs in secondary details and relevant readings first.
+- Copy animation between CPU and GPU while retaining destination sensors and ranges.
+- Compact header, adjustable preview/editor divider and contextual profile actions.
+- Window position, size and maximized state retained across launches.
+- Guided sensor setup and an optional ten-second bar check that restores the active profile.
+- Startup diagnosis reports forced administrator compatibility without changing it.
+
 ## 0.1.0-beta.3 — Unreleased
 
 - Sensor-level bars use the nearest segment instead of rounding down. Smoothed

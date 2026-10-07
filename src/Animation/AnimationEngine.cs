@@ -3,13 +3,13 @@ namespace ZX6DisplayControl {
  public sealed class AnimationEngine {
   private readonly Random random;
   private AnimationSettings previousSettings;
-  private int frame,position;
-  private double phase;
+  private int frame,position,playlistIndex;
+  private double phase,playlistTime;
   private double? filtered;
   private bool wasPaused,levelInitialized;
 
   public AnimationEngine(Random random) {if(random==null) throw new ArgumentNullException("random");this.random=random;}
-  public void Reset() {previousSettings=null;frame=0;position=0;phase=0;filtered=null;wasPaused=false;levelInitialized=false;}
+  public void Reset() {previousSettings=null;frame=0;position=0;phase=0;filtered=null;wasPaused=false;levelInitialized=false;playlistIndex=0;playlistTime=0;}
 
   public AnimationOutput Advance(AnimationSettings settings,double? sourceValue,double elapsedSeconds,bool paused) {
    if(settings==null || settings.Validate().Count>0) throw new ArgumentException("Invalid animation settings.","settings");
@@ -17,6 +17,7 @@ namespace ZX6DisplayControl {
    bool changed=!settings.Equivalent(previousSettings);
    if(changed) {Reset();previousSettings=settings.Copy();frame=settings.Sequence==SequenceKind.Reverse?7:0;}
    var output=new AnimationOutput{Frame=frame,RawValue=sourceValue};
+   if(settings.Mode==AnimationMode.Playlist && changed)frame=output.Frame=settings.Steps[0].Pattern==SequenceKind.Reverse?7:0;
    bool missing=settings.NeedsSource && (!sourceValue.HasValue || !AnimationSettings.Finite(sourceValue.Value));
    if(missing) {phase=0;output.SourceMissing=true;wasPaused=paused;return output;}
 
@@ -31,6 +32,7 @@ namespace ZX6DisplayControl {
    }
    double fps=settings.RateMode==AnimationRateMode.Sensor?Frequency(normalized,settings.MinFps,settings.MaxFps):settings.FixedFps;
    if(settings.Mode==AnimationMode.Cycle) output.FramesPerSecond=fps;
+   if(settings.Mode==AnimationMode.Playlist){output.FramesPerSecond=settings.Steps[playlistIndex].Fps;output.PlaylistStepNumber=playlistIndex+1;}
    if(paused && settings.Mode!=AnimationMode.Fixed) {phase=0;wasPaused=true;return output;}
    if(settings.Mode==AnimationMode.Fixed) frame=settings.FixedFrame;
    else if(settings.Mode==AnimationMode.SensorLevel) {
@@ -48,10 +50,20 @@ namespace ZX6DisplayControl {
    } else {
     // A delayed worker skips missed time; it never replays a backlog to USB.
     double cycleTime=changed || wasPaused || elapsedSeconds>1?0:elapsedSeconds;
+    SequenceKind sequence=settings.Sequence;
+    if(settings.Mode==AnimationMode.Playlist) {
+     playlistTime+=cycleTime;
+     if(playlistTime>=settings.Steps[playlistIndex].Seconds) {
+      playlistTime-=settings.Steps[playlistIndex].Seconds;playlistIndex=(playlistIndex+1)%settings.Steps.Count;
+      phase=0;position=0;frame=settings.Steps[playlistIndex].Pattern==SequenceKind.Reverse?7:0;cycleTime=playlistTime;
+     }
+     sequence=settings.Steps[playlistIndex].Pattern;fps=settings.Steps[playlistIndex].Fps;
+     output.FramesPerSecond=fps;output.PlaylistStepNumber=playlistIndex+1;
+    }
     phase+=cycleTime*fps;
     int steps=(int)Math.Floor(phase+1e-9);phase=Math.Max(0,phase-steps);
     for(int i=0;i<steps;i++) {
-     switch(settings.Sequence) {
+     switch(sequence) {
       case SequenceKind.Forward:frame=(frame+1)%8;break;
       case SequenceKind.Reverse:frame=(frame+7)%8;break;
       case SequenceKind.PingPong:position=(position+1)%14;frame=position<=7?position:14-position;break;

@@ -13,6 +13,7 @@ keep the display running from the Windows tray.
 - **Temperature sources:** choose the sensor shown on each side.
 - **Bar animations:** fill, empty, bounce or random, with fixed speed or speed
   that follows a sensor reading.
+- **Playlists:** rotate through bar effects with a separate duration and speed for each step.
 - **Bar levels:** show a sensor value as a level, or hold a fixed level.
 - **Profiles:** start from protected built-in presets, save personal copies and import or export them.
 - **Display preview:** see both temperature readouts and animated levels together, with pending edits clearly marked.
@@ -24,7 +25,7 @@ again and resumes updates when valid AIDA64 readings return.
 
 ## 📦 Before you start
 
-**Source version: `0.1.0-beta.3` (unreleased).** The executable is unsigned.
+**Source version: `0.1.0-beta.4` (unreleased).** The executable is unsigned.
 The latest published release is `0.1.0-beta.2`.
 See the [changelog](CHANGELOG.md) for changes and upgrade notes.
 
@@ -51,7 +52,8 @@ models and firmware variants have not been verified.
    Enable shared memory and select the sensors you want to use.
 3. Disable **LCD > Turing** in AIDA64 and close the original GPU LCD software
    so this app can use the holder's serial port.
-4. Run `ZX6DisplayControl.exe`, choose a profile or configure each side, then
+4. Run `ZX6DisplayControl.exe`. The first launch opens Connection with setup steps.
+   Choose your readings, review a profile, then
    select **Use profile**. Editing a built-in profile changes the action to
    **Save as new profile**. Administrator rights are not required.
 
@@ -358,6 +360,11 @@ collection of drafts is saved later. **Revert profile** returns to the saved
 active profile without discarding app preferences. Returning a value to its
 original setting clears its pending state.
 
+The Profiles tab previews the selected profile without activating it. Its Use profile
+button and the tray Profiles menu activate a saved selection through the same
+unsaved-edit check. Copy CPU/GPU animation changes only the destination draft: its
+temperature, control sensor and input range are retained.
+
 The eight built-ins have stable `BuiltInId` values. Settings validation rejects
 renaming, deleting or modifying them. Library version `2` restores the canonical
 presets while migrating older libraries: previously modified built-ins become
@@ -393,6 +400,7 @@ The protected preset library contains:
 [SettingsStore.cs](src/Settings/SettingsStore.cs) stores data under
 `%LOCALAPPDATA%\ZX6DisplayControl`:
 
+- `window.json`: window bounds and maximized state, saved separately on exit.
 - `settings.json`: current app settings, schema version `1`.
 - `settings.previous.json`: the previous valid settings.
 - `settings.before-profile-library-v2.json`: the original settings before the
@@ -415,6 +423,9 @@ The app uses a named mutex scoped to the Windows user SID. A second launch
 signals the existing instance to show its window instead of starting another
 controller.
 
+The preview/editor divider is adjustable. Window size, position and maximized state
+are restored at launch; a removed monitor returns the window to a visible work area.
+
 Close to tray is enabled in default settings; minimize to tray is a separate
 option. Hiding the window leaves the worker running. **Exit** waits for an
 active file operation and controller cleanup, reporting progress if either
@@ -424,7 +435,8 @@ disposes the serial port; cleanup failures are reported.
 Start with Windows is opt-in. It writes this executable's full path and
 `--tray` to the current user's `Software\Microsoft\Windows\CurrentVersion\Run`
 key, without requiring administrator rights. Settings shows whether registration
-points to the current executable. After moving the app, **Save preferences**
+points to the current executable and reports a forced Run as administrator
+compatibility setting without changing it. After moving the app, **Save preferences**
 repairs registration when Start with Windows is selected. When saving preferences,
 the previous registry value is restored if settings persistence fails.
 

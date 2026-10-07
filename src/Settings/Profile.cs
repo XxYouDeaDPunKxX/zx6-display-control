@@ -71,6 +71,6 @@ namespace ZX6DisplayControl {
   [DataMember(IsRequired=true)] public Profile Profile {get;set;}
  }
  public sealed class SettingsLoadResult {
-  public AppSettings Settings {get;internal set;} public string Warning {get;internal set;} public bool UsedBackup {get;internal set;}
+  public AppSettings Settings {get;internal set;} public string Warning {get;internal set;} public bool UsedBackup {get;internal set;} public bool FirstRun {get;internal set;}
  }
 }

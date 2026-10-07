@@ -15,19 +15,22 @@ namespace ZX6DisplayControl {
     using(var instance=new SingleInstance()) {
      if(!instance.TryAcquire()){instance.SignalExistingWindow();return;}
      var store=new SettingsStore(directory);var loaded=store.Load();var settings=loaded.Settings;
+     var placementStore=new WindowPlacementStore(directory);var placement=placementStore.Load();
      var initial=new SessionConfiguration{Cpu=settings.ActiveProfile.Cpu.Copy(),Gpu=settings.ActiveProfile.Gpu.Copy(),DisplayEnabled=settings.DisplayEnabled};
      using(var controller=new SessionController(()=>new HolderSession(new SharedMemoryReader(),new DeviceDiscovery(),new SerialTransport(),new MonotonicClock(),s=>log.Write("session",s)),initial,(message,error)=>log.Write("controller failure",message,error)))
      using(var form=new MainForm(settings,store,controller,log,new StartupRegistration(),Application.ExecutablePath,new UpdateService(directory))) {
-      PowerModeChangedEventHandler power=(s,e)=>{if(e.Mode==PowerModes.Suspend)controller.Suspend();else if(e.Mode==PowerModes.Resume)controller.Resume();};
+      form.RestoreWindowPlacement(placement);
+      PowerModeChangedEventHandler power=(s,e)=>{if(e.Mode==PowerModes.Suspend){form.SuspendDisplayCheck();controller.Suspend();}else if(e.Mode==PowerModes.Resume)controller.Resume();};
       SystemEvents.PowerModeChanged+=power;
       form.BringToFrontRequested+=()=>{if(instance.ConsumeOpenRequest())form.ShowWindow();};
       form.Shown+=(s,e)=>{
        var area=Screen.FromControl(form).WorkingArea;if(form.Width>area.Width || form.Height>area.Height)form.WindowState=FormWindowState.Maximized;
+       if(loaded.FirstRun)form.OpenSetup();
        if(args.Contains("--tray"))form.StartInTray();
        if(loaded.Warning!=null)MessageBox.Show(form,loaded.Warning,"Settings recovered",MessageBoxButtons.OK,MessageBoxIcon.Warning);
       };
       log.Write("start","Z-X6 Display Control "+UpdateService.CurrentVersion);
-      try {Application.Run(form);}finally{SystemEvents.PowerModeChanged-=power;controller.Stop();bool ended=controller.Completion.Wait(2000);string error=controller.FailureMessage??(controller.State==null?null:controller.State.CleanupError);log.Write("stop",!ended?"Shutdown requested; cleanup has not completed.":error??"Controller stopped; USB cleanup completed.");}
+      try {Application.Run(form);}finally{try{placementStore.Save(form.CaptureWindowPlacement());}catch(Exception e){log.Write("window placement",e.Message,e);}SystemEvents.PowerModeChanged-=power;controller.Stop();bool ended=controller.Completion.Wait(2000);string error=controller.FailureMessage??(controller.State==null?null:controller.State.CleanupError);log.Write("stop",!ended?"Shutdown requested; cleanup has not completed.":error??"Controller stopped; USB cleanup completed.");}
      }
     }
    }catch(Exception e){log.Write("fatal",e.Message,e);MessageBox.Show("The app could not continue: "+e.Message+"\n\nLog: "+directory,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Error);}

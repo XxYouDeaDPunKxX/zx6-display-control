@@ -17,7 +17,7 @@ namespace ZX6DisplayControl {
   private readonly string[] kinds={null,"temp","sys","fan","duty","volt","curr","pwr"};
   public event EventHandler SelectionChanged;
   public SensorPicker(bool temperaturesOnly) {
-   this.temperaturesOnly=temperaturesOnly;Height=50;MinimumSize=new Size(240,50);Margin=new Padding(0,0,0,6);
+   this.temperaturesOnly=temperaturesOnly;Height=50;MinimumSize=new Size(240,50);Margin=new Padding(0,0,0,6);choice.DisplayMember="Label";
    choice.AccessibleDescription=temperaturesOnly?"Choose the AIDA64 temperature for this side's number. The holder displays whole degrees up to 99 °C. Higher readings show 99 on the holder and their actual value here.":"Choose the exported AIDA64 sensor that controls this bar's speed or level. The temperature number uses its own sensor.";
    var layout=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=2,RowCount=3};layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,65));layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,35));
    layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -41,11 +41,11 @@ namespace ZX6DisplayControl {
   private void Populate() {
    if(updating) return;updating=true;
    try {
-    var items=SensorCatalog.Filter(snapshot,search.Text,kinds[Math.Max(0,categories.SelectedIndex)],temperaturesOnly).Where(v=>v.Number.HasValue).Select(v=>new Choice(v.Id,Describe(v))).ToList();
+    var items=SensorCatalog.Filter(snapshot,search.Text,kinds[Math.Max(0,categories.SelectedIndex)],temperaturesOnly).Where(v=>v.Number.HasValue).OrderByDescending(IsSuggested).Select(v=>MakeChoice(v)).ToList();
     if(!string.IsNullOrEmpty(selectedId) && !items.Any(i=>i.Id==selectedId)) {
-     var selected=SelectedSensor;items.Insert(0,new Choice(selectedId,selected==null?selectedId+" · unavailable":Describe(selected)));
+     var selected=SelectedSensor;items.Insert(0,selected==null?new Choice(selectedId,selectedId+" · unavailable",selectedId+" · unavailable"):MakeChoice(selected));
     }
-    bool same=choice.Items.Count==items.Count && choice.Items.Cast<Choice>().Zip(items,(before,after)=>before.Id==after.Id && before.ToString()==after.ToString()).All(equal=>equal);
+    bool same=choice.Items.Count==items.Count && choice.Items.Cast<Choice>().Zip(items,(before,after)=>before.Id==after.Id && before.Label==after.Label && before.ToString()==after.ToString()).All(equal=>equal);
     if(!same) {
      choice.BeginUpdate();
      try {choice.Items.Clear();choice.Items.AddRange(items.Cast<object>().ToArray());}
@@ -55,17 +55,22 @@ namespace ZX6DisplayControl {
    } finally {updating=false;}
   }
   private static string Describe(SensorValue value) {return SensorPresentation.Describe(value);}
+  public bool GpuChannel {get;set;}
+  private bool IsSuggested(SensorValue value){string prefix=GpuChannel?"GPU":"CPU";return value.Id.IndexOf(prefix,StringComparison.OrdinalIgnoreCase)>=0 && (temperaturesOnly?value.Kind=="temp":value.Unit=="%" || value.Kind=="temp");}
+  private Choice MakeChoice(SensorValue value){string label=SensorPresentation.Short(value);bool duplicate=snapshot!=null && snapshot.Values.Values.Count(v=>SensorPresentation.Short(v)==label)>1;return new Choice(value.Id,label+(duplicate?" · "+value.Id:""),Describe(value));}
   private void ShowInfo() {
    var s=SelectedSensor;bool invalid=temperaturesOnly && s!=null && (!s.Number.HasValue || s.Number.Value<0),limited=temperaturesOnly && s!=null && s.Number.HasValue && s.Number.Value>99;
    info.Text=s==null?(string.IsNullOrEmpty(selectedId)?"Select an exported AIDA64 sensor":"Unavailable · export this sensor in AIDA64"):(!available?"Last reading: ":"")+(s.Number.HasValue?s.Number.Value.ToString("0.##",CultureInfo.CurrentCulture):"Non-numeric value")+" "+(s.Unit??"· unit unknown")+(invalid?" · invalid temperature":limited?" · shown as 99 °C":"");
+   if(s!=null)info.Text+=" · "+s.Id;
    info.ForeColor=invalid || limited || s==null?UiTheme.Warning:UiTheme.Muted;
   }
-  private sealed class Choice {public readonly string Id;private readonly string label;public Choice(string id,string label){Id=id;this.label=label;}public override string ToString(){return label;}}
+  private sealed class Choice {public readonly string Id;public string Label {get;private set;}private readonly string detail;public Choice(string id,string label,string detail){Id=id;Label=label;this.detail=detail;}public override string ToString(){return detail;}}
  }
  internal static class SensorPresentation {
   public static string Kind(SensorValue value) {
    switch(value.Kind) {case "temp":return "Temperature";case "fan":return "Fan speed";case "duty":return "Fan duty";case "volt":return "Voltage";case "curr":return "Current";case "pwr":return "Power";case "sys":return value.Unit=="%"?"Usage":"System";default:return value.Kind;}
   }
   public static string Describe(SensorValue value) {return value.Label+" · "+Kind(value)+(value.Unit==null?"":" ("+value.Unit+")")+" · "+value.Id;}
+  public static string Short(SensorValue value){return value.Label+" · "+Kind(value)+(value.Unit==null?"":" ("+value.Unit+")");}
  }
 }
