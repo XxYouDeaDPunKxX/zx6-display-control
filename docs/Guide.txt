@@ -1,4 +1,4 @@
-Z-X6 DISPLAY CONTROL — 0.1.0-beta.2
+Z-X6 DISPLAY CONTROL — 0.1.0-beta.3
 
 Get started
 Extract the entire folder, keeping ZX6DisplayControl.Core.dll beside ZX6DisplayControl.exe. Run the EXE.
@@ -26,11 +26,14 @@ Pick sensors from the list by name, measurement type, unit and ID. Search is opt
 Modes:
   Loop: Fill, Empty, Bounce or Random. Speed presets: Slow (1 fps), Normal (2 fps),
         Fast (4 fps), Follow usage or Follow temperature.
-  Sensor level: map a sensor reading to one of eight bar levels.
+  Sensor level: map a sensor reading to the nearest of eight bar levels.
   Fixed level: hold a level from 0 (empty) to 7 (full).
 Follow usage starts with a 0–100% range. Follow temperature uses the selected display
 temperature and a 30–80 °C range. Advanced settings exposes exact ranges, speed,
 response time, inversion and level hysteresis. Closing it retains custom settings.
+The bar has seven lit segments, so it cannot represent every percentage exactly.
+Without smoothing or hysteresis, 25% maps to level 2, 50% to 4 and 100% to 7.
+Smoothing delays changes; hysteresis prevents flicker near a level boundary.
 Choosing another unit adapts known ranges (% and °C). For RPM, watts and other units,
 review and confirm the range in Advanced settings. No thresholds are inferred for them.
 Pause animation holds only that bar; valid temperature numbers continue updating.
@@ -92,6 +95,9 @@ prevent saving preferences.
 Start with Windows is opt-in and starts the app in the tray. Settings shows whether
 registration points to this copy. If the folder moves, keep Start with Windows
 selected and Save preferences to repair the registration.
+Leave "Run this program as an administrator" disabled in the EXE's Windows
+Compatibility properties. It can block startup because Windows cannot launch
+that copy without elevation. The app does not require administrator rights.
 Appearance offers Light, Dark or System. Theme previews immediately; Save preferences
 keeps it and Revert preferences restores the saved theme. Windows high contrast takes precedence. System follows
 the Windows app color preference; native file pickers retain Windows styling.

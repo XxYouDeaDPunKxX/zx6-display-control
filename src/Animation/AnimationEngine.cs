@@ -34,11 +34,16 @@ namespace ZX6DisplayControl {
    if(paused && settings.Mode!=AnimationMode.Fixed) {phase=0;wasPaused=true;return output;}
    if(settings.Mode==AnimationMode.Fixed) frame=settings.FixedFrame;
    else if(settings.Mode==AnimationMode.SensorLevel) {
-    int candidate=(int)Math.Floor(7*normalized);
+    // Choose the nearest visible segment. Truncation made the full bar require
+    // an exact maximum, which a smoothed reading may never reach.
+    int candidate=(int)Math.Floor(7*normalized+.5);
     double h=settings.HysteresisPercent/100;
-    if(!levelInitialized || normalized<=0 || normalized>=1 ||
-       (candidate>frame && normalized>=(frame+1)/7.0+h) ||
-       (candidate<frame && normalized<=frame/7.0-h)) frame=candidate;
+    // A band wider than half a segment would put the endpoint threshold
+    // outside 0..1. In that case use the endpoint bin's ordinary boundary.
+    bool endpoint=(candidate==0 || candidate==7) && h>=.5/7.0;
+    if(!levelInitialized || normalized<=0 || normalized>=1 || endpoint ||
+       (candidate>frame && normalized>=(frame+.5)/7.0+h) ||
+       (candidate<frame && normalized<=(frame-.5)/7.0-h)) frame=candidate;
     levelInitialized=true;
    } else {
     // A delayed worker skips missed time; it never replays a backlog to USB.

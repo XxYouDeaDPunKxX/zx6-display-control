@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-beta.3 — Unreleased
+
+- Sensor-level bars use the nearest segment instead of rounding down. Smoothed
+  full-scale readings can now reach level 7; wide hysteresis settings cannot
+  place the empty/full transition outside the sensor range.
+- The guide explains discrete bar levels and the Windows compatibility setting
+  that can prevent startup when an EXE is forced to run as administrator.
+
 ## 0.1.0-beta.2 — 2026-10-06
 
 ### Added

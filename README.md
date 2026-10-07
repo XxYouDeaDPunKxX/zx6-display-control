@@ -24,7 +24,8 @@ again and resumes updates when valid AIDA64 readings return.
 
 ## 📦 Before you start
 
-**Current version: `0.1.0-beta.2`.** This is a beta build and the executable is unsigned.
+**Source version: `0.1.0-beta.3` (unreleased).** The executable is unsigned.
+The latest published release is `0.1.0-beta.2`.
 See the [changelog](CHANGELOG.md) for changes and upgrade notes.
 
 You need:
@@ -281,7 +282,7 @@ except when using the explicit **Follow temperature** preset.
 | Mode | Behavior |
 | --- | --- |
 | Loop | Advance Fill, Empty, Bounce or Random at a fixed or sensor-driven speed. |
-| Sensor level | Map the selected sensor to one of eight bar levels. |
+| Sensor level | Map the selected sensor to the nearest of eight bar levels. |
 | Fixed level | Hold the chosen level `0–7`. |
 
 Loop patterns operate on the built-in levels:
@@ -302,7 +303,7 @@ For a sensor value `x`, lower bound `a` and upper bound `b`, the engine computes
 n = clamp((x - a) / (b - a), 0, 1)
 inverted response: n = 1 - n
 sensor-driven speed = minFps + n × (maxFps - minFps)
-sensor-level candidate = floor(7 × n)
+sensor-level candidate = floor(7 × n + 0.5)
 ```
 
 The upper input bound must exceed the lower bound. Out-of-range values clamp
@@ -326,9 +327,11 @@ the current sample is used directly.
 
 Sensor-level mode also applies **0–10% hysteresis**, defaulting to **2%**,
 around level boundaries. With current level `k` and margin `h` expressed as
-a fraction, an upward change requires `n ≥ (k + 1) / 7 + h`; a downward
-change requires `n ≤ k / 7 - h`. The first sample and normalized endpoints
-take their candidate level directly. This prevents repeated level changes
+a fraction, an upward change requires `n ≥ (k + 0.5) / 7 + h`; a downward
+change requires `n ≤ (k - 0.5) / 7 - h`. The first sample and normalized endpoints
+take their candidate level directly. If `h ≥ 1/14`, entering the empty or full
+level uses that level's ordinary rounding boundary; otherwise its threshold
+could fall outside the sensor range. Hysteresis reduces repeated level changes
 when a sensor hovers around a boundary.
 
 **Pause animation** holds only the bar; temperatures keep updating.

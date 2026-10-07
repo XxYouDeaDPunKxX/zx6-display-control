@@ -8,7 +8,7 @@ namespace ZX6DisplayControl.Tests {
    Assert.Near(0,AnimationEngine.Normalize(-10,0,100,false));Assert.Near(1,AnimationEngine.Normalize(110,0,100,false));
    Assert.Near(2.5,AnimationEngine.Frequency(.5,1,4));
    Assert.Throws<ArgumentOutOfRangeException>(()=>AnimationEngine.Normalize(50,50,50,false));
-   int[] expected={0,1,3,7};double[] inputs={0,25,50,100};var e=Engine();var s=Level();
+   int[] expected={0,2,4,7};double[] inputs={0,25,50,100};var e=Engine();var s=Level();
    for(int i=0;i<inputs.Length;i++) Assert.Equal(expected[i],e.Advance(s,inputs[i],.5,false).Frame);
   }
   [Test] public static void Animation_SequencesAndRandom() {
@@ -38,7 +38,7 @@ namespace ZX6DisplayControl.Tests {
   }
   [Test] public static void Animation_HysteresisAndEndpoints() {
    var s=Level();s.HysteresisPercent=2;var e=Engine();
-   double[] inputs={50,58,60,56,55,100,0};int[] frames={3,3,4,4,3,7,0};
+   double[] inputs={50,64,67,64,62,100,0};int[] frames={4,4,5,5,4,7,0};
    for(int i=0;i<inputs.Length;i++) Assert.Equal(frames[i],e.Advance(s,inputs[i],.5,false).Frame);
   }
   [Test] public static void Animation_ValidatesConfigurations() {
