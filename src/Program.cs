@@ -6,6 +6,7 @@ using Microsoft.Win32;
 namespace ZX6DisplayControl {
  internal static class Program {
   [STAThread] private static void Main(string[] args) {
+   AppLanguage.Initialize();
    Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
    Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
    if(args.Any(a=>a!="--tray")){MessageBox.Show("The only supported launch option is --tray.","Z-X6 Display Control");return;}
@@ -30,10 +31,10 @@ namespace ZX6DisplayControl {
        if(loaded.Warning!=null)MessageBox.Show(form,loaded.Warning,"Settings recovered",MessageBoxButtons.OK,MessageBoxIcon.Warning);
       };
       log.Write("start","Z-X6 Display Control "+UpdateService.CurrentVersion);
-      try {Application.Run(form);}finally{try{placementStore.Save(form.CaptureWindowPlacement());}catch(Exception e){log.Write("window placement",e.Message,e);}SystemEvents.PowerModeChanged-=power;controller.Stop();bool ended=controller.Completion.Wait(2000);string error=controller.FailureMessage??(controller.State==null?null:controller.State.CleanupError);log.Write("stop",!ended?"Shutdown requested; cleanup has not completed.":error??"Controller stopped; USB cleanup completed.");}
+      try {Application.Run(form);}finally{try{placementStore.Save(form.CaptureWindowPlacement());}catch(Exception e){log.Write("window placement",AppLanguage.ErrorMessage(e),e);}SystemEvents.PowerModeChanged-=power;controller.Stop();bool ended=controller.Completion.Wait(2000);string error=controller.FailureMessage??(controller.State==null?null:controller.State.CleanupError);log.Write("stop",!ended?"Shutdown requested; cleanup has not completed.":error??"Controller stopped; USB cleanup completed.");}
      }
     }
-   }catch(Exception e){log.Write("fatal",e.Message,e);MessageBox.Show("The app could not continue: "+e.Message+"\n\nLog: "+directory,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Error);}
+   }catch(Exception e){log.Write("fatal",AppLanguage.ErrorMessage(e),e);MessageBox.Show("The app could not continue: "+AppLanguage.ErrorMessage(e)+"\n\nLog: "+directory,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Error);}
   }
  }
 }

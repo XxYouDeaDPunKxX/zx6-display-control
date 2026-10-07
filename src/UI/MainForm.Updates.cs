@@ -44,7 +44,7 @@ namespace ZX6DisplayControl {
     updateCancellation=null;cancellation.Dispose();checkingUpdates=false;
     if(!IsDisposed && !Disposing){checkUpdates.Enabled=!closing;if(closing)updateStatus.Text="Update check canceled.";}
    }
-   if(failure!=null)await log.WriteAsync("update check failed",failure.Message,failure);
+   if(failure!=null)await log.WriteAsync("update check failed",AppLanguage.ErrorMessage(failure),failure);
   }
   private void RefreshUpdateNotice() {
    bool available=updateResult!=null && updateResult.ReleaseUrl!=null;

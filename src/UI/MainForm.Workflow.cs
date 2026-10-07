@@ -80,7 +80,7 @@ namespace ZX6DisplayControl {
   private async Task RefreshStartup() {
    try {var startupInfo=await Task.Run(()=>new {Enabled=startup.GetEnabled(exePath),Warning=StartupRegistration.CompatibilityWarning(exePath)});bool enabled=startupInfo.Enabled;if(IsDisposed || Disposing)return;
     startupStatus.Text=startupInfo.Warning??(enabled?"This copy is registered to start with Windows.":saved.StartWithWindows?"Startup registration does not point to this copy. Save preferences to repair it.":"This copy is not registered to start with Windows.");
-   }catch(Exception e){if(!IsDisposed && !Disposing)startupStatus.Text="Could not check Windows startup: "+e.Message;}
+   }catch(Exception e){if(!IsDisposed && !Disposing)startupStatus.Text="Could not check Windows startup: "+AppLanguage.ErrorMessage(e);}
   }
   private void Changed() {if(updating)return;lastSaveFeedback=null;preferenceStatus.Text=PreferencesPending?"Unsaved preferences":"";RefreshFromState();}
   private static SessionConfiguration Configuration(AppSettings value) {return new SessionConfiguration{Cpu=value.ActiveProfile.Cpu.Copy(),Gpu=value.ActiveProfile.Gpu.Copy(),DisplayEnabled=value.DisplayEnabled};}
@@ -98,8 +98,8 @@ namespace ZX6DisplayControl {
    try {
     Exception failure=null;
     try {await log.WriteAsync("action started",name);if(IsDisposed || Disposing)return;await action();await log.WriteAsync("action finished",name+(lastSaveFeedback==null?"":": "+lastSaveFeedback));}
-    catch(Exception e){failure=e;lastSaveFeedback=name+" failed: "+e.Message;}
-    if(failure!=null){await log.WriteAsync("action failed",name+": "+failure.Message,failure);System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();}
+    catch(Exception e){failure=e;lastSaveFeedback=name+" failed: "+AppLanguage.ErrorMessage(e);}
+    if(failure!=null){await log.WriteAsync("action failed",name+": "+AppLanguage.ErrorMessage(failure),failure);System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();}
    }finally {busy=false;operationName=null;if(!IsDisposed && !Disposing){SetEditingEnabled(!closing);RefreshFromState();}idle.TrySetResult(true);}
   }
   private void SetEditingEnabled(bool enabled) {

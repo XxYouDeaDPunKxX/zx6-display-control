@@ -1,4 +1,9 @@
-Z-X6 DISPLAY CONTROL — 0.1.0-beta.4
+Z-X6 DISPLAY CONTROL — 0.1.0-beta.5
+
+The app interface and system-error summaries use English. Number and date formats
+follow your Windows regional settings. Windows file pickers may retain the Windows
+language when English resources are unavailable. Sensor names, personal profile
+names and original error details in exported logs are preserved.
 
 Get started
 Extract the entire folder, keeping ZX6DisplayControl.Core.dll beside ZX6DisplayControl.exe. Run the EXE.

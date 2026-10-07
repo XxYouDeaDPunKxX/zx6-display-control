@@ -33,7 +33,7 @@ namespace ZX6DisplayControl {
    }
   }
   private void RecordFailure(string message,Exception error) {
-   string detail=message+": "+error.Message;failure=string.IsNullOrEmpty(failure)?detail:failure+" | "+detail;
+   string detail=message+": "+AppLanguage.ErrorMessage(error);failure=string.IsNullOrEmpty(failure)?detail:failure+" | "+detail;
    // Diagnostics must never prevent port cleanup or completion notification.
    if(reportFailure!=null)try{reportFailure(message,error);}catch(Exception){}
   }

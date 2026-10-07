@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 namespace ZX6DisplayControl {
  public sealed partial class MainForm:Form {
-  private async Task ExportDiagnostics() {lastSaveFeedback="Export canceled.";using(var dialog=new SaveFileDialog{Filter="Diagnostics text|*.txt",FileName="holder-diagnostics.txt",OverwritePrompt=true})if(dialog.ShowDialog(this)==DialogResult.OK){string path=dialog.FileName;var state=controller.State;var snapshot=saved.Copy();await Task.Run(()=>log.Export(path,state,snapshot,UpdateService.CurrentVersion));lastSaveFeedback="Diagnostics exported.";}}
-  private async void Attempt(Action action) {Exception failure=null;try{action();}catch(Exception e){failure=e;}if(failure!=null){await log.WriteAsync("action failed",failure.Message,failure);ShowActionError(failure);}}
+  private async Task ExportDiagnostics() {lastSaveFeedback="Export canceled.";using(var dialog=new SaveFileDialog{Title="Export diagnostics",Filter="Diagnostics text|*.txt",FileName="holder-diagnostics.txt",OverwritePrompt=true})if(dialog.ShowDialog(this)==DialogResult.OK){string path=dialog.FileName;var state=controller.State;var snapshot=saved.Copy();await Task.Run(()=>log.Export(path,state,snapshot,UpdateService.CurrentVersion));lastSaveFeedback="Diagnostics exported.";}}
+  private async void Attempt(Action action) {Exception failure=null;try{action();}catch(Exception e){failure=e;}if(failure!=null){await log.WriteAsync("action failed",AppLanguage.ErrorMessage(failure),failure);ShowActionError(failure);}}
   private async void AttemptAsync(Func<Task> action) {try{await action();}catch(Exception e){ShowActionError(e);}}
-  private void ShowActionError(Exception error){if(!IsDisposed && !Disposing && !closing){ShowWindow();AppDialog.Show(this,error.Message,"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Warning);} }
+  private void ShowActionError(Exception error){if(!IsDisposed && !Disposing && !closing){ShowWindow();AppDialog.Show(this,AppLanguage.ErrorMessage(error),"Z-X6 Display Control",MessageBoxButtons.OK,MessageBoxIcon.Warning);} }
   public void ShowWindow() {Show();if(WindowState==FormWindowState.Minimized)WindowState=restoredState;Activate();}
   public void StartInTray() {Hide();}
   private DialogResult AskSave() {ShowWindow();return AppDialog.Show(this,"Save changes before exiting?","Unsaved changes",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question);}
@@ -32,7 +32,7 @@ namespace ZX6DisplayControl {
     string failure=controller.FailureMessage??(controller.State==null?null:controller.State.CleanupError);
     if(!string.IsNullOrEmpty(failure) && !systemClosing)AppDialog.Show(this,"The controller stopped, but cleanup reported a problem:\n\n"+failure,"Shutdown",MessageBoxButtons.OK,MessageBoxIcon.Warning);
     exiting=true;Close();
-   }catch(Exception e){if(!IsDisposed && !Disposing){closing=false;SetEditingEnabled(true);lastSaveFeedback="Exit canceled: "+e.Message;RefreshFromState();ShowActionError(e);}}
+   }catch(Exception e){if(!IsDisposed && !Disposing){closing=false;SetEditingEnabled(true);lastSaveFeedback="Exit canceled: "+AppLanguage.ErrorMessage(e);RefreshFromState();ShowActionError(e);}}
   }
   private void ExitApp() {Attempt(()=>RequestExit(AskSave));}
   private void OnFormClosing(object sender,FormClosingEventArgs e) {

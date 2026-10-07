@@ -64,12 +64,12 @@ namespace ZX6DisplayControl {
      }
     }
    } catch(UnauthorizedAccessException) {ConnectionFailed(now,"PortBusy","USB port busy. Close GPULCD and disable the Turing LCD module in AIDA64.");}
-     catch(Exception e) {ConnectionFailed(now,"ConnectionError","Display connection failed: "+e.Message);}
+     catch(Exception e) {ConnectionFailed(now,"ConnectionError","Display connection failed: "+AppLanguage.ErrorMessage(e));}
    Publish();
   }
   private void ReadSensors(long now) {
    SensorReadResult result;
-   try {result=reader.Read(now);} catch(Exception e) {result=SensorReadResult.Failure("ReadError","AIDA64 read failed: "+e.Message);}
+   try {result=reader.Read(now);} catch(Exception e) {result=SensorReadResult.Failure("ReadError","AIDA64 read failed: "+AppLanguage.ErrorMessage(e));}
    currentSnapshot=result.Snapshot;
    if(currentSnapshot==null) {aidaStatus=result.ErrorCode;aidaMessage=result.Message;readErrors++;return;}
    snapshot=currentSnapshot;validReads++;
@@ -103,7 +103,7 @@ namespace ZX6DisplayControl {
    catch(Exception e) {displayOff=null;RecordCleanupError("Display power-off failed",e);}
    finally {try {port.Close();} catch(Exception e) {RecordCleanupError("USB port close failed",e);}initialized=false;sentCpu=sentGpu=null;portName=null;connectedId=null;}
   }
-  private void RecordCleanupError(string action,Exception error) {string message=action+": "+error.Message;cleanupError=string.IsNullOrEmpty(cleanupError)?message:cleanupError+" | "+message;log("cleanup | "+message);}
+  private void RecordCleanupError(string action,Exception error) {string message=action+": "+AppLanguage.ErrorMessage(error);cleanupError=string.IsNullOrEmpty(cleanupError)?message:cleanupError+" | "+message;log("cleanup | "+message);}
   private void Publish() {
    string animationError=(cpu.SourceMissing?"CPU animation sensor unavailable: "+config.Cpu.Animation.SensorId+". ":"")+(gpu.SourceMissing?"GPU animation sensor unavailable: "+config.Gpu.Animation.SensorId+".":"");
    bool outputKnown=initialized && port.IsOpen && displayOff==false && sentCpu!=null;

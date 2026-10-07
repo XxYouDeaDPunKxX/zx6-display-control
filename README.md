@@ -25,7 +25,12 @@ again and resumes updates when valid AIDA64 readings return.
 
 ## 📦 Before you start
 
-**Source version: `0.1.0-beta.4` (unreleased).** The executable is unsigned.
+**Source version: `0.1.0-beta.5` (unreleased).** The executable is unsigned.
+
+The app uses English for its interface and system-error summaries. Regional
+number and date formats are retained. Windows file pickers may use the Windows
+language when English resources are unavailable. Sensor names, custom profile
+names and original diagnostic details are preserved.
 The latest published release is `0.1.0-beta.2`.
 See the [changelog](CHANGELOG.md) for changes and upgrade notes.
 

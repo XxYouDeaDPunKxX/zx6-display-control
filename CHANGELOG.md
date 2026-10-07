@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-beta.5 — Unreleased
+
+- Use English UI resources throughout the app without changing regional number
+  input or date formats.
+- Present Windows errors in English with their error codes, including on systems
+  without English message resources. Keep original exceptions in diagnostic logs.
+- Request English from native Windows components within this app; file pickers
+  can still fall back to the language installed in Windows.
+
 ## 0.1.0-beta.4 — Unreleased
 
 - Bar response explains the control reading, resulting segments or speed, smoothing,

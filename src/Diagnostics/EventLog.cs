@@ -26,7 +26,7 @@ namespace ZX6DisplayControl {
     if(File.Exists(current) && new FileInfo(current).Length+bytes.Length>1048576) {if(File.Exists(previous)) File.Delete(previous);File.Move(current,previous);}
     using(var stream=new FileStream(current,FileMode.Append,FileAccess.Write,FileShare.Read)) stream.Write(bytes,0,bytes.Length);
     SetError(null);
-   } catch(IOException e) {SetError(e.Message);} catch(UnauthorizedAccessException e) {SetError(e.Message);}
+   } catch(IOException e) {SetError(AppLanguage.ErrorMessage(e));} catch(UnauthorizedAccessException e) {SetError(AppLanguage.ErrorMessage(e));}
   }
   public void Export(string destination,SessionState state,AppSettings settings,string appVersion) {
    string report=BuildReport(state,settings,appVersion);File.WriteAllText(destination,report,new UTF8Encoding(false));
