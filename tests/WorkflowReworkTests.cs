@@ -72,8 +72,8 @@ namespace ZX6DisplayControl.Tests {
     using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),controller,new EventLog(dir.Path),new StartupRegistration(new FakeStartupStore()),@"C:\Holder.exe")) {
      form.StartPosition=FormStartPosition.Manual;form.Location=new System.Drawing.Point(-20000,-20000);form.Show();Application.DoEvents();
      var mode=UiBindingTests.Find<ComboBox>(UiBindingTests.Find<ChannelControl>(form,"CpuChannel"),"Mode");mode.Focus();mode.DroppedDown=true;Assert.True(mode.DroppedDown,"Fixture did not open the mode menu");
-     controller.FailureMessage="fixture stopped";form.RefreshFromState();
-     Assert.True(mode.DroppedDown,"Live refresh dismissed the open menu");Assert.True(UiBindingTests.Find<Button>(form,"HolderStatus").Text.Contains("stopped"));mode.DroppedDown=false;
+     var before=mode.RectangleToScreen(mode.ClientRectangle);controller.FailureMessage="fixture stopped";form.RefreshFromState();
+     Assert.True(mode.DroppedDown,"Live refresh dismissed the open menu. Bounds: "+before+" -> "+mode.RectangleToScreen(mode.ClientRectangle));Assert.True(UiBindingTests.Find<Button>(form,"HolderStatus").Text.Contains("stopped"));mode.DroppedDown=false;
     }
    }
   }

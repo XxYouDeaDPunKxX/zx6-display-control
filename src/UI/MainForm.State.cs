@@ -25,7 +25,7 @@ namespace ZX6DisplayControl {
    Text="Z-X6 Display Control"+(dirty?" · unsaved changes":"");
    var state=controller.State;bool failed=!string.IsNullOrEmpty(controller.FailureMessage);
    if(state==null) {
-    notice.Text=failed?"The controller stopped. Exit and reopen the app to reconnect.":"Starting controller…";notice.Visible=true;
+    if(!open){notice.Text=failed?"The controller stopped. Exit and reopen the app to reconnect.":"Starting controller…";notice.Visible=true;}
     aidaStatus.Text=failed?"AIDA64 · readings stopped":"AIDA64 · waiting";holderStatus.Text=failed?"Display · controller stopped":"Display · connecting…";
     power.Enabled=trayPower.Enabled=!busy && !failed;diagnostics.SetActionsEnabled(!busy,!failed);deviceSetup.UpdateUnavailable(failed,!busy);
     trayStatus.Text=failed?"Controller stopped":"Starting controller…";
@@ -37,7 +37,7 @@ namespace ZX6DisplayControl {
    aidaStatus.ForeColor=!failed && state.AidaStatus=="Ready"?UiTheme.Success:UiTheme.Warning;
    holderStatus.Text=failed?"Display · controller stopped":"Display · "+(state.Connected && state.DisplayOff?"off":DeviceText(state.DeviceStatus));holderStatus.ForeColor=state.Connected && !failed?UiTheme.Success:UiTheme.Warning;
    power.Text=saved.DisplayEnabled?"Turn display off":"Turn display on";power.Enabled=trayPower.Enabled=!busy && !failed;
-   notice.Text=string.Join(" ",new[]{failed?"The controller stopped. Exit and reopen the app to reconnect.":state.Error,log.LastError==null?null:"Log file unavailable: "+log.LastError}.Where(x=>!string.IsNullOrEmpty(x)));notice.Visible=!string.IsNullOrWhiteSpace(notice.Text);
+   if(!open){notice.Text=string.Join(" ",new[]{failed?"The controller stopped. Exit and reopen the app to reconnect.":state.Error,log.LastError==null?null:"Log file unavailable: "+log.LastError}.Where(x=>!string.IsNullOrEmpty(x)));notice.Visible=!string.IsNullOrWhiteSpace(notice.Text);}
    cpu.SetCatalog(state.Snapshot,open);gpu.SetCatalog(state.Snapshot,open);cpu.SetAvailable(available);gpu.SetAvailable(available);
    deviceSetup.UpdateState(state,failed,!busy);deviceSetup.UpdateCatalog(state.Snapshot,available,open);diagnostics.SetActionsEnabled(!busy,!failed);diagnostics.UpdateState(state,available);
    double now=previewClock.Elapsed.TotalSeconds,elapsed=now-previousPreview;previousPreview=now;profiles.UpdatePreview(state.Snapshot,available,elapsed);

@@ -24,7 +24,7 @@ namespace ZX6DisplayControl {
   private readonly Label preview=new Label{Name="BarResponse",AutoSize=true,Dock=DockStyle.Fill,Text="Waiting for sensor data",AccessibleDescription="The reading and resulting bar output. A meter has seven lit segments plus empty. Smoothing delays changes; hysteresis holds near a boundary to prevent flicker. An animated bar uses the reading to set speed instead of height. Preview response refers to unsaved changes."};
   private readonly TableLayoutPanel table=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,ColumnCount=2,Padding=new Padding(14)};
   private readonly Dictionary<Control,Label> captions=new Dictionary<Control,Label>();
-  private bool loading,unknownRange;private string sourceUnit;private readonly bool isGpu;private AnimationOutput lastPreview;private readonly double[] filterValues={0,1,2,5};
+  private bool loading,unknownRange;private string sourceUnit;private readonly bool isGpu;private readonly double[] filterValues={0,1,2,5};
   public event EventHandler DraftChanged;
   public event Action CopyRequested;
   public ChannelControl(bool gpu=false) {
@@ -40,7 +40,7 @@ namespace ZX6DisplayControl {
    foreach(var combo in new[]{sequence,smoothing}) combo.SelectedIndexChanged+=(s,e)=>Changed();
    rate.SelectedIndexChanged+=(s,e)=>{if(!loading){RepairInactiveFields();Changed();}};
    mode.SelectedIndexChanged+=(s,e)=>ModeChanged();simplePreset.SelectedIndexChanged+=(s,e)=>{if(!loading)ApplyPreset(simplePreset.SelectedItem as string);};
-   advanced.CheckedChanged+=(s,e)=>{if(!loading){UpdateVisibility();if(lastPreview!=null)SetPreview(lastPreview);}};
+   advanced.CheckedChanged+=(s,e)=>{if(!loading){UpdateVisibility();}};
    fixedFrame.ValueChanged+=(s,e)=>Changed();invert.CheckedChanged+=(s,e)=>Changed();pause.CheckedChanged+=(s,e)=>Changed();confirmRange.CheckedChanged+=(s,e)=>Changed();
    playlist.Changed+=(s,e)=>Changed();
    temperature.SelectionChanged+=(s,e)=>{if(!loading && (simplePreset.SelectedItem as string)=="Follow temperature")ApplyPreset("Follow temperature");else Changed();};source.SelectionChanged+=(s,e)=>SourceChanged();
@@ -78,7 +78,7 @@ namespace ZX6DisplayControl {
   public void SetAvailable(bool value) {temperature.SetAvailable(value);source.SetAvailable(value);}
   public void SetPreview(AnimationOutput output,bool draft=false) {
    captions[preview].Text=draft?"Preview response":"Bar response";
-   if(output==null) {lastPreview=null;preview.Text="No display output";return;}lastPreview=output;
+   if(output==null) {preview.Text="No display output";return;}
    AnimationSettings settings;try{settings=GetDraft().Animation;}catch(FormatException){preview.Text="Fix the highlighted settings to preview the response.";return;}
    var sensor=source.SelectedSensor;string label=sensor==null?(source.SelectedId??"Control sensor"):sensor.Label,unit=sensor==null || string.IsNullOrEmpty(sensor.Unit)?"":" "+sensor.Unit;
    string level=output.Frame+" of 7 segments",pattern=new[]{"Fill","Empty","Bounce","Random"}[(int)settings.Sequence];
