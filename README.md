@@ -560,7 +560,7 @@ while the fingerprint checks prevent packaging a stale or modified build.
 
 ---
 
-### 🤝 Contributing
+## 🤝 Contributing
 
 Contributions are welcome. Use
 [Issues](https://github.com/XxYouDeaDPunKxX/zx6-display-control/issues)
@@ -574,10 +574,16 @@ problem concerns AIDA64 readings, port access, display values or animations.
 For pull requests, describe the change and what you checked. Keep changes
 compatible with the C# 5 / .NET Framework 4.7.2 build.
 
+## 🤖 AI-assisted development
+
+This project was developed with AI assistance.
+
+The project, documentation, and repository materials were shaped through human-directed work supported by AI tools during drafting, structuring, review, and refinement.
+
+AI assistance does not make the project automatically correct, complete, or suitable for every use case. Read it, test it, and adapt it to your own context.
+
 ## 📄 License
 
 MIT. See [LICENSE](LICENSE).
 
-## 🤖 AI-assisted development
 
-This project was developed with AI assistance.
