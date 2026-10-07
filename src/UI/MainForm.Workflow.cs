@@ -20,7 +20,8 @@ namespace ZX6DisplayControl {
   private async Task ActivateProfileCore(string name,Func<DialogResult> ask) {
    if(name==editing.Name && ContentChanged) {
     var answer=ask();if(answer==DialogResult.Cancel || (answer!=DialogResult.Yes && answer!=DialogResult.No))return;
-    if(answer==DialogResult.No){editing=saved.Profiles.Single(p=>p.Name==name).Copy();LoadEditor();}
+    if(answer==DialogResult.Yes)await ApplyCore();
+    editing=saved.Profiles.Single(p=>p.Name==name).Copy();LoadEditor();
     await ApplyCore();return;
    }
    if(await ChooseProfile(name,ask))await ApplyCore();

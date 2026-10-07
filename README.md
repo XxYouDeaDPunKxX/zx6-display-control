@@ -283,11 +283,15 @@ except when using the explicit **Follow temperature** preset.
 
 | Mode | Behavior |
 | --- | --- |
-| Loop | Advance Fill, Empty, Bounce or Random at a fixed or sensor-driven speed. |
-| Sensor level | Map the selected sensor to the nearest of eight bar levels. |
+| Animated bar · speed | Advance Fill, Empty, Bounce or Random at a fixed or sensor-driven speed. |
+| Sensor meter · level | Map the selected sensor to the nearest of eight bar levels. |
 | Fixed level | Hold the chosen level `0–7`. |
 
-Loop patterns operate on the built-in levels:
+Playlist repeats 1–16 ordered effects. Each step selects a pattern, duration
+(1–600 seconds) and speed (1–4 fps). Pause freezes both the frame and step timer.
+Settings copy the step list independently for each channel and profile.
+
+Animated patterns operate on the built-in levels:
 
 - **Fill:** increment and wrap, `0 → 1 → … → 7 → 0`.
 - **Empty:** decrement and wrap, `7 → 6 → … → 0 → 7`.

@@ -3,6 +3,14 @@ using System.Drawing;
 using System.Reflection;
 namespace ZX6DisplayControl.Tests {
  public static class WindowPlacementTests {
+  [Test] public static void Placement_OrderlyExitRetainsBoundsForPostLoopSave() {
+   foreach(bool maximized in new[]{false,true})using(var dir=new TempDirectory())using(var rig=new SessionRig()) {
+    rig.At(0);using(var form=new MainForm(AppSettings.Defaults(),new SettingsStore(dir.Path),new FakeController{State=rig.Session.State},new EventLog(dir.Path),new StartupRegistration(new FakeStartupStore()),@"C:\Holder.exe")) {
+     form.Show();form.Bounds=new Rectangle(60,60,1000,700);if(maximized)form.WindowState=System.Windows.Forms.FormWindowState.Maximized;System.Windows.Forms.Application.DoEvents();var before=form.CaptureWindowPlacement();
+     form.RequestExit(()=>System.Windows.Forms.DialogResult.No);UiTestPump.Until(()=>form.IsDisposed);var after=form.CaptureWindowPlacement();Assert.Equal(before.Bounds,after.Bounds);Assert.Equal(before.Maximized,after.Maximized);
+    }
+   }
+  }
   [Test] public static void Placement_PersistenceIsSeparateAndRejectsCorruptGeometry() {
    using(var dir=new TempDirectory()) {
     var settings=new SettingsStore(dir.Path);settings.Save(AppSettings.Defaults());string original=System.IO.File.ReadAllText(System.IO.Path.Combine(dir.Path,"settings.json"));

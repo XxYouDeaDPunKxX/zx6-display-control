@@ -64,12 +64,13 @@ namespace ZX6DisplayControl {
   private static void DrawChoice(object sender,DrawItemEventArgs e) {
    var combo=(ComboBox)sender;bool selected=(e.State&DrawItemState.Selected)!=0 && (e.State&DrawItemState.ComboBoxEdit)==0;
    using(var brush=new SolidBrush(selected?SystemColors.Highlight:Input))e.Graphics.FillRectangle(brush,e.Bounds);
-   string text=e.Index>=0 && e.Index<combo.Items.Count?combo.Items[e.Index].ToString():combo.Text;
+   string text=e.Index>=0 && e.Index<combo.Items.Count?combo.GetItemText(combo.Items[e.Index]):combo.Text;
    TextRenderer.DrawText(e.Graphics,text,combo.Font,new Rectangle(e.Bounds.X+3,e.Bounds.Y,e.Bounds.Width-3,e.Bounds.Height),!combo.Enabled?Muted:selected?SystemColors.HighlightText:Text,TextFormatFlags.Left|TextFormatFlags.VerticalCenter|TextFormatFlags.EndEllipsis);
    if((e.State&DrawItemState.Focus)!=0)e.DrawFocusRectangle();
   }
   private static void DrawTab(object sender,DrawItemEventArgs e) {var tabs=(TabControl)sender;bool selected=e.Index==tabs.SelectedIndex;using(var brush=new SolidBrush(selected?Surface:Background))e.Graphics.FillRectangle(brush,e.Bounds);TextRenderer.DrawText(e.Graphics,tabs.TabPages[e.Index].Text,tabs.Font,e.Bounds,selected?Accent:Text,TextFormatFlags.HorizontalCenter|TextFormatFlags.VerticalCenter|TextFormatFlags.NoPrefix);}
-  public static void Menu(ContextMenuStrip menu) {menu.Renderer=new ToolStripProfessionalRenderer(new MenuColors());menu.BackColor=Surface;menu.ForeColor=Text;foreach(ToolStripItem item in menu.Items){item.BackColor=Surface;item.ForeColor=Text;}}
+  public static void Menu(ContextMenuStrip menu) {StyleMenu(menu);}
+  private static void StyleMenu(ToolStrip menu) {menu.Renderer=new ToolStripProfessionalRenderer(new MenuColors());menu.BackColor=Surface;menu.ForeColor=Text;foreach(ToolStripItem item in menu.Items){item.BackColor=Surface;item.ForeColor=Text;var child=item as ToolStripDropDownItem;if(child!=null && child.HasDropDownItems)StyleMenu(child.DropDown);}}
   private sealed class MenuColors:ProfessionalColorTable {public override Color ToolStripDropDownBackground{get{return Surface;}}public override Color ImageMarginGradientBegin{get{return Surface;}}public override Color ImageMarginGradientMiddle{get{return Surface;}}public override Color ImageMarginGradientEnd{get{return Surface;}}public override Color MenuItemSelected{get{return Input;}}public override Color MenuItemBorder{get{return Accent;}}public override Color MenuBorder{get{return Muted;}}}
   [DllImport("dwmapi.dll")]private static extern int DwmSetWindowAttribute(IntPtr window,int attribute,ref int value,int size);
  }
